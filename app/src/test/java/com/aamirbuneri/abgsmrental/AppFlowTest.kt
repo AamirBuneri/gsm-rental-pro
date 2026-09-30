@@ -161,14 +161,40 @@ abstract class FlowHarness(private val theme: String) {
         }
         server.dispatcher = site
         server.start()
+        // if a step hangs, print where every thread is (shows up in the CI test log)
+        watchdog = Thread {
+            try {
+                Thread.sleep(150_000)
+                while (true) {
+                    val dump = buildString {
+                        appendLine("=== WATCHDOG ${javaClass.simpleName}: last step '$lastStep', calls ${site.calls.takeLast(8)}")
+                        Thread.getAllStackTraces().forEach { (t, st) ->
+                            if (st.any { it.className.startsWith("androidx") || it.className.startsWith("com.aamirbuneri") || it.className.startsWith("org.robolectric") }) {
+                                appendLine("--- ${t.name} (${t.state})")
+                                st.take(45).forEach { appendLine("    at $it") }
+                            }
+                        }
+                    }
+                    println(dump)
+                    runCatching { java.io.File("build/screens/$theme").mkdirs(); java.io.File("build/screens/$theme/HANG-${javaClass.simpleName}.txt").writeText(dump) }
+                    Thread.sleep(60_000)
+                }
+            } catch (_: InterruptedException) {}
+        }.apply { isDaemon = true; start() }
     }
+
+    private var watchdog: Thread? = null
+    @Volatile protected var lastStep = "start"
 
     @After
     fun tearDown() {
+        watchdog?.interrupt()
         server.shutdown()
     }
 
     protected fun shot(name: String) {
+        lastStep = "shot $name"
+        println("STEP shot $name")
         rule.mainClock.advanceTimeBy(700)
         rule.waitForIdle()
         captureScreenRoboImage("build/screens/$theme/$name.png")
@@ -176,6 +202,8 @@ abstract class FlowHarness(private val theme: String) {
 
     /** Move the app's clock forward in small steps (animations, splash) while the fake site answers. */
     protected fun waitText(text: String, timeoutMs: Long = 25_000) {
+        lastStep = "wait $text"
+        println("STEP wait $text")
         val end = System.currentTimeMillis() + timeoutMs
         while (System.currentTimeMillis() < end) {
             rule.mainClock.advanceTimeBy(100)

@@ -10,6 +10,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -49,6 +53,7 @@ jobs:
       - name: App flow test + screenshots
         id: uitest
         continue-on-error: true
+        timeout-minutes: 22
         run: |
           set -o pipefail
           ./gradlew testDebugUnitTest --stacktrace 2>&1 | tee test.log
