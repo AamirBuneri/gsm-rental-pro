@@ -41,7 +41,9 @@ jobs:
           SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-        run: ./gradlew assembleDebug assembleRelease --stacktrace
+        run: |
+          set -o pipefail
+          ./gradlew assembleDebug assembleRelease --stacktrace 2>&1 | tee build.log
 
       - name: Rename
         run: |
@@ -54,6 +56,28 @@ jobs:
         with:
           name: AB-Gsm-Rental-apk
           path: out/*.apk
+
+      # Latest APKs on the "apk" branch as well (easy direct download link)
+      - name: Publish APK branch
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          cd out
+          git init -q -b apk
+          git add *.apk
+          git -c user.name="github-actions" -c user.email="actions@github.com" commit -qm "APK from ${GITHUB_SHA::7}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" apk
+
+      - name: Publish build log on failure
+        if: failure()
+        run: |
+          mkdir -p /tmp/ci-log
+          if [ -f build.log ]; then cp build.log /tmp/ci-log/build.log; else echo "no build log" > /tmp/ci-log/build.log; fi
+          grep -nE "^e: |error:|FAILURE|What went wrong" build.log > /tmp/ci-log/errors.txt 2>/dev/null || true
+          cd /tmp/ci-log
+          git init -q -b ci-log
+          git add .
+          git -c user.name="github-actions" -c user.email="actions@github.com" commit -qm "Build log ${GITHUB_SHA::7}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" ci-log
 
       - name: Attach to GitHub release (tags v*)
         if: startsWith(github.ref, 'refs/tags/v')
