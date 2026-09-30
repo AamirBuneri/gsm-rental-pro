@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AB Gsm Rental</string>
+    <string name="channel_updates">Updates</string>
+    <string name="channel_updates_desc">Rentals, service orders and wallet updates</string>
+    <string name="channel_reminders">Rental reminders</string>
+    <string name="channel_reminders_desc">A reminder before a rental ends</string>
+</resources>
