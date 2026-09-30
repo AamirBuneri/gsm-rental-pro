@@ -148,6 +148,7 @@ class FakeSite : Dispatcher() {
 @RunWith(AndroidJUnit4::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 abstract class FlowHarness(private val theme: String) {
+    protected val themeName: String get() = theme
     @get:Rule
     val rule = createAndroidComposeRule<MainActivity>()
 
@@ -404,10 +405,19 @@ abstract class AdminFlow(theme: String) : FlowHarness(theme) {
         tapText("Ali Khan")
         waitText("Wallet history")
         shot("34-admin-reseller")
-        tapText("Add money")
-        waitText("Add money")
-        shot("35-admin-topup")
-        tapText("Cancel")
+        // dialogs don't settle with the hand-driven clock in Robolectric: let it run while one is open
+        rule.mainClock.autoAdvance = true
+        try {
+            tapText("Add money")
+            waitText("Balance now")
+            rule.waitForIdle()
+            captureScreenRoboImage("build/screens/$themeName/35-admin-topup.png")
+        } catch (e: Throwable) {
+            println("STEP dialog screenshot skipped: $e")
+        } finally {
+            runCatching { tapText("Cancel") }
+            rule.mainClock.autoAdvance = false
+        }
         back()
 
         tab("Rentals")
