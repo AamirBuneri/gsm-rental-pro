@@ -74,7 +74,6 @@ android {
                 it.systemProperty("roborazzi.test.record", "true")
                 it.forkEvery = 1L         // fresh app + DataStore per test class
                 it.maxHeapSize = "2g"
-                it.timeout.set(java.time.Duration.ofMinutes(20))
                 it.testLogging { showStandardStreams = true; events("passed", "failed", "skipped") }
             }
         }
