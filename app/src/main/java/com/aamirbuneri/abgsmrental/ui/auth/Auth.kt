@@ -58,6 +58,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -298,6 +299,7 @@ private fun SetupScreen(vm: AuthViewModel) {
             icon = Icons.Outlined.Language,
             keyboard = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Go, autoCorrectEnabled = false),
             actions = KeyboardActions(onGo = { focus.clearFocus(); vm.connect() }),
+            modifier = Modifier.testTag("site"),
         )
         Spacer(Modifier.height(12.dp))
         InlineError(vm.error)
@@ -349,6 +351,7 @@ private fun LoginScreen(vm: AuthViewModel, settings: Settings) {
             icon = Icons.Outlined.Person,
             keyboard = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next, autoCorrectEnabled = false),
             actions = KeyboardActions(onNext = { passFocus.requestFocus() }),
+            modifier = Modifier.testTag("username"),
         )
         Spacer(Modifier.height(12.dp))
         Field(
@@ -359,7 +362,7 @@ private fun LoginScreen(vm: AuthViewModel, settings: Settings) {
             password = true,
             keyboard = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done, autoCorrectEnabled = false),
             actions = KeyboardActions(onDone = { focus.clearFocus(); vm.signIn(context) }),
-            modifier = Modifier.focusRequester(passFocus),
+            modifier = Modifier.focusRequester(passFocus).testTag("password"),
         )
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             val forgot = info?.forgotUrl.orEmpty()

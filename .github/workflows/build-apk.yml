@@ -45,6 +45,29 @@ jobs:
           set -o pipefail
           ./gradlew assembleDebug assembleRelease --stacktrace 2>&1 | tee build.log
 
+      # Runs the real app against a fake site on the JVM (Robolectric) and takes screenshots
+      - name: App flow test + screenshots
+        id: uitest
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          ./gradlew testDebugUnitTest --stacktrace 2>&1 | tee test.log
+
+      - name: Publish screenshots + test results
+        if: always() && github.event_name == 'push'
+        run: |
+          mkdir -p /tmp/screens
+          cp -r app/build/screens/* /tmp/screens/ 2>/dev/null || true
+          mkdir -p /tmp/screens/results
+          cp app/build/test-results/testDebugUnitTest/*.xml /tmp/screens/results/ 2>/dev/null || true
+          if [ -f test.log ]; then tail -n 400 test.log > /tmp/screens/test-log.txt; fi
+          echo "${{ steps.uitest.outcome }}" > /tmp/screens/OUTCOME.txt
+          cd /tmp/screens
+          git init -q -b screens
+          git add -A
+          git -c user.name="github-actions" -c user.email="actions@github.com" commit -qm "Screens ${GITHUB_SHA::7}" || true
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" screens
+
       - name: Rename
         run: |
           mkdir -p out
