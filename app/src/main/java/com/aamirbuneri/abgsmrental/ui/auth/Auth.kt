@@ -666,6 +666,7 @@ private fun RegisterScreen(vm: AuthViewModel) {
                         .clip(RoundedCornerShape(12.dp))
                         .then(if (on) Modifier.background(AB.brand.gradient) else Modifier.background(MaterialTheme.colorScheme.surfaceContainer).border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp)))
                         .clickable { vm.currency = cur.code }
+                        .testTag("cur_${cur.code}")
                         .padding(horizontal = 14.dp, vertical = 9.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
