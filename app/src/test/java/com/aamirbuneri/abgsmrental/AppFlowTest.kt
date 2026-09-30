@@ -194,7 +194,7 @@ abstract class AppFlowBase(private val theme: String) {
 
         // Account, wallet, notifications
         rule.onNode(hasText("Account") and hasClickLabelOrTab()).performClick()
-        waitText("Appearance")
+        waitText("Theme")
         shot("13-account")
         rule.onNodeWithText("Wallet & history").performClick()
         waitText("Wallet top-up")
