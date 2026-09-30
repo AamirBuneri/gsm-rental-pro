@@ -236,6 +236,27 @@ abstract class FlowHarness(private val theme: String) {
         return all[0]
     }
 
+    /** Tap by calling the node's click action (no gesture, no scrolling — works below the fold). */
+    protected fun tapTag(tag: String) = act(rule.onAllNodesWithTag(tag).fetchSemanticsNodes(), "tag $tag")
+    protected fun tapText(text: String, substring: Boolean = false) = act(rule.onAllNodesWithText(text, substring = substring).fetchSemanticsNodes(), "text $text")
+
+    private fun act(nodes: List<androidx.compose.ui.semantics.SemanticsNode>, what: String) {
+        lastStep = "tap $what"
+        println("STEP tap $what → ${nodes.size}")
+        val node = nodes.firstOrNull { it.config.contains(androidx.compose.ui.semantics.SemanticsActions.OnClick) }
+            ?: throw AssertionError("Nothing clickable for $what (${nodes.size} nodes)")
+        rule.runOnUiThread { node.config[androidx.compose.ui.semantics.SemanticsActions.OnClick].action?.invoke() }
+        rule.mainClock.advanceTimeBy(200)
+    }
+
+    protected fun typeTag(tag: String, text: String) {
+        lastStep = "type $tag"
+        val node = rule.onAllNodesWithTag(tag).fetchSemanticsNodes().firstOrNull { it.config.contains(androidx.compose.ui.semantics.SemanticsActions.SetText) }
+            ?: throw AssertionError("No text field tagged $tag")
+        rule.runOnUiThread { node.config[androidx.compose.ui.semantics.SemanticsActions.SetText].action?.invoke(androidx.compose.ui.text.AnnotatedString(text)) }
+        rule.mainClock.advanceTimeBy(100)
+    }
+
     protected fun tab(label: String) = rule.onNode(hasText(label) and hasClickAction()).performClick()
 
     /** Splash → site address → sign-in screen. */
@@ -341,20 +362,20 @@ abstract class SignUpFlow(theme: String) : FlowHarness(theme) {
         rule.onNodeWithTag("reg_phone").performTextReplacement("923009998877")
         rule.onNodeWithTag("reg_company").performTextReplacement("Bilal Mobiles")
         shot("21-register")
-        byTag("cur_USD").performScrollTo().performClick()
-        byTag("reg_password").performScrollTo().performTextReplacement("Secret@123")
-        byTag("reg_password2").performScrollTo().performTextReplacement("Secret@123")
+        tapTag("cur_USD")
+        typeTag("reg_password", "Secret@123")
+        typeTag("reg_password2", "Secret@123")
         shot("22-register-filled")
-        byTag("reg_submit").performScrollTo().performClick()
+        tapTag("reg_submit")
         waitText("Waiting for approval")
         shot("23-waiting-approval")
         assertTrue("sent the form: ${site.bodies}", site.bodies.any { it.startsWith("/api/v1/auth/register") && it.contains("\"currency\":\"USD\"") && it.contains("\"username\":\"newshop\"") && it.contains("\"company\":\"Bilal Mobiles\"") })
 
         // not yet → still waiting; approved → straight in, no password again
-        byTag("check_again").performClick()
+        tapTag("check_again")
         waitText("Not approved yet")
         site.approved = true
-        byTag("check_again").performClick()
+        tapTag("check_again")
         waitText("Wallet balance")
         shot("24-signed-in-after-approval")
     }
@@ -372,7 +393,7 @@ abstract class AdminFlow(theme: String) : FlowHarness(theme) {
         tab("Orders")
         waitText("Samsung Network Unlock")
         shot("31-admin-orders")
-        byText("Redmi Note 12", substring = true).performClick()
+        tapText("Redmi Note 12", substring = true)
         waitText("Start work")
         shot("32-admin-order")
         back()
@@ -380,19 +401,19 @@ abstract class AdminFlow(theme: String) : FlowHarness(theme) {
         tab("Resellers")
         waitText("Bilal Ahmed")
         shot("33-admin-resellers")
-        byText("Ali Khan").performClick()
+        tapText("Ali Khan")
         waitText("Wallet history")
         shot("34-admin-reseller")
-        byText("Add money").performScrollTo().performClick()
+        tapText("Add money")
         waitText("Add money")
         shot("35-admin-topup")
-        byText("Cancel").performClick()
+        tapText("Cancel")
         back()
 
         tab("Rentals")
         waitText("Usman Mobiles")
         shot("36-admin-rentals")
-        byText("Ali Khan", substring = true).performClick()
+        tapText("Ali Khan", substring = true)
         waitText("Renter’s login")
         shot("37-admin-rental")
         back()
@@ -400,12 +421,15 @@ abstract class AdminFlow(theme: String) : FlowHarness(theme) {
         tab("More")
         waitText("Tools & slots")
         shot("38-admin-more")
-        byText("Tools & slots").performClick()
+        tapText("Tools & slots")
         waitText("Griffin Unlocker")
         shot("39-admin-tools")
-        byText("UnlockTool").performClick()
+        tapText("UnlockTool")
         waitText("Slot B")
-        rule.onAllNodesWithText("Show login")[1].performClick()
+        run {
+            val nodes = rule.onAllNodesWithText("Show login").fetchSemanticsNodes()
+            rule.runOnUiThread { nodes[1].config[androidx.compose.ui.semantics.SemanticsActions.OnClick].action?.invoke() }
+        }
         waitText("B8-new!Pass")
         shot("40-admin-slots")
         back()

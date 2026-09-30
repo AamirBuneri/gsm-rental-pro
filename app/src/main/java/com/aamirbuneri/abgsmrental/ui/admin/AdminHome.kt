@@ -151,7 +151,7 @@ private fun Content(nav: NavHostController, admin: AdminShellState, d: AdminDash
         // what needs a decision now
         val attention = buildList<Triple<String, ImageVector, String>> {
             d.pendingRegistrations?.takeIf { it > 0 }?.let { add(Triple("$it new reseller${if (it == 1) "" else "s"} waiting for approval", Icons.Outlined.HowToReg, "reg")) }
-            d.services?.takeIf { it.needQuote > 0 }?.let { add(Triple("${it.needQuote} order${if (it.needQuote == 1) "" else "s"} need a price", Icons.Outlined.RequestQuote, "quote")) }
+            d.services?.takeIf { it.needQuote > 0 }?.let { add(Triple("${it.needQuote} ${if (it.needQuote == 1) "order needs" else "orders need"} a price", Icons.Outlined.RequestQuote, "quote")) }
             d.services?.takeIf { it.ready > 0 }?.let { add(Triple("${it.ready} paid order${if (it.ready == 1) "" else "s"} ready to start", Icons.Outlined.SupportAgent, "ready")) }
             d.pendingReturns?.takeIf { it > 0 }?.let { add(Triple("$it return request${if (it == 1) "" else "s"} (open on the website)", Icons.AutoMirrored.Outlined.Undo, "returns")) }
             if (d.expiringAccounts.isNotEmpty()) add(Triple("${d.expiringAccounts.size} tool account${if (d.expiringAccounts.size == 1) "" else "s"} expiring soon", Icons.Outlined.EventBusy, "expiring"))
