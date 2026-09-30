@@ -55,6 +55,7 @@ import com.aamirbuneri.abgsmrental.container
 import com.aamirbuneri.abgsmrental.data.AppInfo
 import com.aamirbuneri.abgsmrental.data.Settings
 import com.aamirbuneri.abgsmrental.ui.account.AccountScreen
+import com.aamirbuneri.abgsmrental.ui.admin.AdminShell
 import com.aamirbuneri.abgsmrental.ui.auth.AuthFlow
 import com.aamirbuneri.abgsmrental.ui.home.HomeScreen
 import com.aamirbuneri.abgsmrental.ui.notifications.NotificationsScreen
@@ -98,7 +99,7 @@ fun AppRoot(settings: Settings, dark: Boolean) {
         when (s) {
             Stage.SPLASH -> BrandSplash(dark) { splashDone = true }
             Stage.AUTH -> AuthFlow(settings)
-            Stage.MAIN -> MainShell(settings)
+            Stage.MAIN -> SignedIn(settings)
         }
     }
 }
@@ -121,10 +122,23 @@ object Routes {
 
 private data class Tab(val route: String, val label: String, val icon: ImageVector, val selectedIcon: ImageVector)
 
+/** Resellers get the shop screens; the owner and staff get the admin screens. */
 @Composable
-private fun MainShell(settings: Settings) {
+private fun SignedIn(settings: Settings) {
+    val context = LocalContext.current
+    // the role / staff permissions can change on the site (e.g. the owner ticks a new area) — check once per start
+    LaunchedEffect(Unit) {
+        runCatching { context.container.api.me() }.onSuccess { me ->
+            if (me.role.isNotBlank() && (me.role != settings.role || me.perms.toSet() != settings.perms.toSet())) context.container.prefs.setRole(me)
+        }
+    }
+    val shell = remember(settings.team) { Shell() }
+    if (settings.team) AdminShell(settings, shell) else MainShell(settings, shell)
+}
+
+@Composable
+private fun MainShell(settings: Settings, shell: Shell) {
     val nav = rememberNavController()
-    val shell = remember { Shell() }
     val context = LocalContext.current
     LaunchedEffect(settings.site) {
         runCatching { context.container.api.appInfo(settings.site) }.onSuccess {

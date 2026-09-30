@@ -23,6 +23,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.AccountBalanceWallet
+import androidx.compose.material.icons.outlined.AdminPanelSettings
+import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.Call
 import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.outlined.DarkMode
@@ -64,6 +66,8 @@ import com.aamirbuneri.abgsmrental.container
 import com.aamirbuneri.abgsmrental.data.Settings
 import com.aamirbuneri.abgsmrental.data.ThemeMode
 import com.aamirbuneri.abgsmrental.ui.Routes
+import com.aamirbuneri.abgsmrental.ui.admin.AdminRoutes
+import com.aamirbuneri.abgsmrental.data.Perm
 import com.aamirbuneri.abgsmrental.ui.Shell
 import com.aamirbuneri.abgsmrental.ui.components.GlassCard
 import com.aamirbuneri.abgsmrental.ui.components.IconBadge
@@ -104,20 +108,41 @@ fun AccountScreen(nav: NavHostController, shell: Shell, settings: Settings) {
                     Column(Modifier.weight(1f)) {
                         Text("@" + settings.username, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         Text(
-                            info?.name?.ifBlank { null } ?: settings.siteName.ifBlank { settings.site },
+                            (if (settings.team) (if (settings.owner) "Owner · " else "Staff · ") else "") +
+                                (info?.name?.ifBlank { null } ?: settings.siteName.ifBlank { settings.site }),
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1,
                         )
                     }
                 }
             }
 
-            Group("My account") {
-                Item(Icons.Outlined.AccountBalanceWallet, "Wallet & history", b.success) { nav.navigate(Routes.WALLET) }
-                Divider()
-                Item(Icons.Outlined.Notifications, "Notifications", b.info, badge = shell.unread) { nav.navigate(Routes.NOTIFICATIONS) }
-                if (shell.services) {
+            if (settings.team) {
+                Group("Admin") {
+                    Item(Icons.Outlined.Notifications, "Notifications", b.info, badge = shell.unread) { nav.navigate(AdminRoutes.NOTIFICATIONS) }
+                    if (settings.can(Perm.TOOLS)) {
+                        Divider()
+                        Item(Icons.Outlined.Inventory2, "Tools & slots", b.warning) { nav.navigate(AdminRoutes.TOOLS) }
+                    }
                     Divider()
-                    Item(Icons.Outlined.SupportAgent, "My service orders", b.warning) { nav.goTab(Routes.SERVICES) }
+                    Item(Icons.Outlined.AdminPanelSettings, "Full admin panel (website)", MaterialTheme.colorScheme.tertiary) {
+                        openUrl(context, settings.site.trimEnd('/') + "/index.php?r=%2Fadmin")
+                    }
+                }
+                if (!settings.owner) {
+                    Text(
+                        "You can use: " + settings.perms.joinToString(", ") { permLabel(it) }.ifBlank { "the dashboard" } + ". The owner changes this in Admin → Staff.",
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 6.dp),
+                    )
+                }
+            } else {
+                Group("My account") {
+                    Item(Icons.Outlined.AccountBalanceWallet, "Wallet & history", b.success) { nav.navigate(Routes.WALLET) }
+                    Divider()
+                    Item(Icons.Outlined.Notifications, "Notifications", b.info, badge = shell.unread) { nav.navigate(Routes.NOTIFICATIONS) }
+                    if (shell.services) {
+                        Divider()
+                        Item(Icons.Outlined.SupportAgent, "My service orders", b.warning) { nav.goTab(Routes.SERVICES) }
+                    }
                 }
             }
 
@@ -139,7 +164,7 @@ fun AccountScreen(nav: NavHostController, shell: Shell, settings: Settings) {
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text("Alerts on this phone", style = MaterialTheme.typography.titleSmall)
-                        Text("Rental ending, order updates, wallet", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(if (settings.team) "New sign-ups, orders and alerts" else "Rental ending, order updates, wallet", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Switch(
                         checked = settings.notifications,
@@ -154,7 +179,7 @@ fun AccountScreen(nav: NavHostController, shell: Shell, settings: Settings) {
                 }
             }
 
-            val support = info?.support
+            val support = info?.support?.takeIf { !settings.team } // the team is the support
             if (support != null && (support.whatsapp.isNotBlank() || support.phone.isNotBlank() || support.email.isNotBlank()) || info?.website?.isNotBlank() == true) {
                 Group("Help") {
                     var first = true
@@ -201,7 +226,7 @@ fun AccountScreen(nav: NavHostController, shell: Shell, settings: Settings) {
         AlertDialog(
             onDismissRequest = { confirmSignOut = false },
             title = { Text("Sign out?") },
-            text = { Text("You’ll need your password to sign in again. Rental reminders on this phone stop.") },
+            text = { Text(if (settings.team) "You’ll need your password to sign in again. Alerts on this phone stop." else "You’ll need your password to sign in again. Rental reminders on this phone stop.") },
             confirmButton = {
                 TextButton(onClick = {
                     confirmSignOut = false
@@ -241,4 +266,10 @@ private fun Item(icon: ImageVector, label: String, tint: Color, badge: Int = 0, 
 @Composable
 private fun Divider() {
     HorizontalDivider(Modifier.padding(start = 66.dp), color = MaterialTheme.colorScheme.outlineVariant)
+}
+
+private fun permLabel(p: String): String = when (p) {
+    "rentals" -> "Rentals"; "tools" -> "Tools & slots"; "services" -> "Service orders"; "catalog" -> "Service catalog"
+    "resellers" -> "Resellers"; "money" -> "Money"; "chat" -> "Chat"; "website" -> "Website"
+    else -> p
 }

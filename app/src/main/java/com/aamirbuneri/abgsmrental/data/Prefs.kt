@@ -31,7 +31,16 @@ data class Settings(
     val notifications: Boolean = true,
     val signedIn: Boolean = false,
     val username: String = "",
-)
+    /** reseller | admin | staff */
+    val role: String = "reseller",
+    /** staff permissions (the owner has them all) */
+    val perms: List<String> = emptyList(),
+) {
+    /** Owner or staff → admin screens. */
+    val team: Boolean get() = role == "admin" || role == "staff"
+    val owner: Boolean get() = role == "admin"
+    fun can(perm: String): Boolean = owner || perm in perms
+}
 
 /** App settings + the sign-in token (encrypted with a key that never leaves the phone's keystore). */
 class Prefs(private val context: Context) {
@@ -43,6 +52,8 @@ class Prefs(private val context: Context) {
         val token = stringPreferencesKey("token")
         val username = stringPreferencesKey("username")
         val lastNotice = intPreferencesKey("last_notice")
+        val role = stringPreferencesKey("role")
+        val perms = stringPreferencesKey("perms")
         val askedPermission = booleanPreferencesKey("asked_notification_permission")
     }
 
@@ -54,6 +65,8 @@ class Prefs(private val context: Context) {
             notifications = p[K.notifications] ?: true,
             signedIn = !p[K.token].isNullOrEmpty(),
             username = p[K.username].orEmpty(),
+            role = p[K.role] ?: "reseller",
+            perms = p[K.perms].orEmpty().split(',').filter { it.isNotBlank() },
         )
     }
 
@@ -70,10 +83,18 @@ class Prefs(private val context: Context) {
 
     suspend fun setSiteName(name: String) = context.store.edit { it[K.siteName] = name }
 
-    suspend fun signIn(token: String, username: String) = context.store.edit {
+    suspend fun signIn(token: String, user: UserBrief) = context.store.edit {
         it[K.token] = TokenCipher.encrypt(token)
-        it[K.username] = username
+        it[K.username] = user.username
+        it[K.role] = user.role.ifBlank { "reseller" }
+        it[K.perms] = user.perms.joinToString(",")
         it[K.lastNotice] = 0
+    }
+
+    /** The site said the role / staff permissions changed (checked on every start). */
+    suspend fun setRole(user: UserBrief) = context.store.edit {
+        it[K.role] = user.role.ifBlank { "reseller" }
+        it[K.perms] = user.perms.joinToString(",")
     }
 
     suspend fun signOut() = context.store.edit {

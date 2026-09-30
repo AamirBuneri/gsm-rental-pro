@@ -19,6 +19,13 @@ data class Support(
 )
 
 @Serializable
+data class CurrencyOption(
+    val code: String = "",
+    val name: String = "",
+    val symbol: String = "",
+)
+
+@Serializable
 data class AppInfo(
     val app: String = "",
     @SerialName("api_version") val apiVersion: Int = 0,
@@ -34,6 +41,11 @@ data class AppInfo(
     @SerialName("register_url") val registerUrl: String = "",
     @SerialName("forgot_url") val forgotUrl: String = "",
     val support: Support = Support(),
+    /** 3.4+: sign-up inside the app (null = older site → open the website). */
+    @SerialName("app_signup") val appSignup: Boolean? = null,
+    @SerialName("password_reset") val passwordReset: Boolean? = null,
+    @SerialName("team_app") val teamApp: Boolean = false,
+    val currencies: List<CurrencyOption> = emptyList(),
 )
 
 @Serializable
@@ -41,7 +53,24 @@ data class UserBrief(
     val username: String = "",
     val name: String = "",
     val email: String = "",
+    /** reseller | admin | staff (3.4+; older sites only let resellers in). */
+    val role: String = "reseller",
+    val team: Boolean = false,
+    val owner: Boolean = false,
+    val perms: List<String> = emptyList(),
 )
+
+@Serializable
+data class RegisterResult(
+    /** ready (signed in) | verify_email | pending */
+    val state: String = "",
+    val token: String? = null,
+    val message: String = "",
+    val user: UserBrief? = null,
+)
+
+@Serializable
+data class Message(val message: String = "")
 
 @Serializable
 data class LoginResult(

@@ -24,8 +24,11 @@ import java.io.IOException
 import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
 
-/** An error to show the reseller. [code] is the HTTP status (0 = no connection). */
-class ApiException(val code: Int, message: String) : Exception(message) {
+/**
+ * An error to show the user. [code] is the HTTP status (0 = no connection).
+ * [state] is the site's reason when it has one: verify_email, pending, disabled, maintenance, team_off, no_permission …
+ */
+class ApiException(val code: Int, message: String, val state: String? = null) : Exception(message) {
     val offline: Boolean get() = code == 0
     val signedOut: Boolean get() = code == 401
 }
@@ -74,6 +77,25 @@ class Api(
             put("device", deviceName())
             put("app_version", BuildConfig.VERSION_NAME)
         })
+
+    suspend fun register(site: String, form: Map<String, String>): RegisterResult =
+        call("POST", "/auth/register", RegisterResult.serializer(), site = site, auth = false, body = buildJsonObject {
+            form.forEach { (k, v) -> put(k, if (k == "password") v else v.trim()) }
+            put("device", deviceName())
+            put("app_version", BuildConfig.VERSION_NAME)
+        })
+
+    suspend fun resendVerification(site: String, username: String, password: String): Message =
+        call("POST", "/auth/resend", Message.serializer(), site = site, auth = false, body = buildJsonObject {
+            put("username", username.trim())
+            put("password", password)
+        })
+
+    suspend fun forgotPassword(site: String, email: String): Message =
+        call("POST", "/auth/forgot", Message.serializer(), site = site, auth = false, body = buildJsonObject { put("email", email.trim()) })
+
+    /** Who is signed in — role and staff permissions (3.4+). */
+    suspend fun me(): UserBrief = call("GET", "/auth/me", UserBrief.serializer())
 
     suspend fun logout() {
         runCatching { call("POST", "/auth/logout", JsonElement.serializer(), body = JsonObject(emptyMap()), signOutOn401 = false) }
@@ -126,6 +148,75 @@ class Api(
             put("limit", "$limit")
             if (beforeId > 0) put("before_id", "$beforeId")
         })
+
+    // ── owner / staff (3.4+) ───────────────────────────────────────────────
+
+    suspend fun adminDashboard(): AdminDashboard = call("GET", "/admin/dashboard", AdminDashboard.serializer())
+
+    suspend fun adminNotifications(beforeId: Int = 0, limit: Int = 30): NoticePage =
+        call("GET", "/admin/notifications", NoticePage.serializer(), query = buildMap {
+            put("limit", "$limit")
+            if (beforeId > 0) put("before_id", "$beforeId")
+        })
+
+    suspend fun adminMarkRead(id: Int? = null): Unread =
+        call("POST", "/admin/notifications/read", Unread.serializer(), body = buildJsonObject { if (id != null) put("id", id) })
+
+    suspend fun adminRentals(status: String, q: String = "", page: Int = 1): Page<AdminRental> =
+        call("GET", "/admin/rentals", Page.serializer(AdminRental.serializer()), query = mapOf("status" to status, "q" to q, "page" to "$page"))
+
+    suspend fun adminRental(id: Int): AdminRental = call("GET", "/admin/rentals/$id", AdminRental.serializer())
+
+    suspend fun adminExtend(id: Int, minutes: Int): AdminRental =
+        call("POST", "/admin/rentals/$id/extend", AdminRental.serializer(), body = buildJsonObject { put("minutes", minutes) })
+
+    suspend fun adminCloseRental(id: Int, reason: String): AdminRental =
+        call("POST", "/admin/rentals/$id/close", AdminRental.serializer(), body = buildJsonObject { put("reason", reason) })
+
+    suspend fun adminOrders(status: String, q: String = "", page: Int = 1): Page<AdminOrder> =
+        call("GET", "/admin/orders", Page.serializer(AdminOrder.serializer()), query = mapOf("status" to status, "q" to q, "page" to "$page"))
+
+    suspend fun adminOrder(id: Int): AdminOrder = call("GET", "/admin/orders/$id", AdminOrder.serializer())
+
+    suspend fun adminOrderSecret(id: Int): RemoteLogin = call("GET", "/admin/orders/$id/secret", RemoteLogin.serializer())
+
+    suspend fun adminOrderStart(id: Int): AdminOrder = call("POST", "/admin/orders/$id/start", AdminOrder.serializer(), body = JsonObject(emptyMap()))
+
+    suspend fun adminOrderComplete(id: Int, result: String): AdminOrder =
+        call("POST", "/admin/orders/$id/complete", AdminOrder.serializer(), body = buildJsonObject { put("result", result) })
+
+    suspend fun adminOrderQuote(id: Int, amount: Double, note: String): AdminOrder =
+        call("POST", "/admin/orders/$id/quote", AdminOrder.serializer(), body = buildJsonObject { put("amount", amount); put("note", note) })
+
+    suspend fun adminOrderClose(id: Int, status: String, refund: Double, reason: String): AdminOrder =
+        call("POST", "/admin/orders/$id/close", AdminOrder.serializer(), body = buildJsonObject {
+            put("status", status); put("refund", refund); put("reason", reason)
+        })
+
+    suspend fun adminResellers(filter: String, q: String = "", page: Int = 1): Page<AdminReseller> =
+        call("GET", "/admin/resellers", Page.serializer(AdminReseller.serializer()), query = mapOf("f" to filter, "q" to q, "page" to "$page"))
+
+    suspend fun adminReseller(id: Int): AdminReseller = call("GET", "/admin/resellers/$id", AdminReseller.serializer())
+
+    suspend fun adminCredit(id: Int, type: String, amount: Double, note: String): AdminReseller =
+        call("POST", "/admin/resellers/$id/credit", AdminReseller.serializer(), body = buildJsonObject {
+            put("type", type); put("amount", amount); put("note", note)
+        })
+
+    /** toggle | verify | reject | confirm-email */
+    suspend fun adminResellerAction(id: Int, action: String, reason: String = ""): AdminReseller =
+        call("POST", "/admin/resellers/$id/$action", AdminReseller.serializer(), body = buildJsonObject { if (reason.isNotBlank()) put("reason", reason) })
+
+    suspend fun adminTools(): List<AdminTool> = call("GET", "/admin/tools", ListSerializer(AdminTool.serializer()))
+
+    suspend fun adminSlots(toolId: Int): ToolSlots = call("GET", "/admin/tools/$toolId/slots", ToolSlots.serializer())
+
+    suspend fun adminSlotSecret(id: Int): ToolLogin = call("GET", "/admin/slots/$id/secret", ToolLogin.serializer())
+
+    suspend fun adminSlotPassword(id: Int, password: String): AdminSlot =
+        call("POST", "/admin/slots/$id/password", AdminSlot.serializer(), body = buildJsonObject { put("password", password) })
+
+    suspend fun adminSlotToggle(id: Int): AdminSlot = call("POST", "/admin/slots/$id/toggle", AdminSlot.serializer(), body = JsonObject(emptyMap()))
 
     // ── transport ──────────────────────────────────────────────────────────
 
@@ -181,9 +272,12 @@ class Api(
         }
         val ok = (root["ok"] as? JsonPrimitive)?.booleanOrNull == true
         if (!ok || code >= 400) {
-            val msg = (root["error"] as? JsonPrimitive)?.contentOrNull ?: "Something went wrong ($code)."
+            var msg = (root["error"] as? JsonPrimitive)?.contentOrNull ?: "Something went wrong ($code)."
+            val state = (root["state"] as? JsonPrimitive)?.contentOrNull
+            // an older site doesn't know the newer endpoints
+            if (code == 404 && root["ok"] == null) msg = "Your site needs an update for this (GSM Rental Pro 3.4 or newer)."
             if (code == 401 && auth && signOutOn401) onSignedOut()
-            throw ApiException(if (code in 200..299) 400 else code, msg)
+            throw ApiException(if (code in 200..299) 400 else code, msg, state)
         }
         return json.decodeFromJsonElement(serializer, root["data"] ?: JsonNull)
     }

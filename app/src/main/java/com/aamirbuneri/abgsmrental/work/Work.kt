@@ -78,7 +78,7 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
         val s = c.prefs.snapshot()
         if (!s.signedIn || !s.notifications) return Result.success()
         return try {
-            val page = c.api.notifications(limit = 15)
+            val page = if (s.team) c.api.adminNotifications(limit = 15) else c.api.notifications(limit = 15)
             val last = c.prefs.lastNotice()
             val newest = page.items.maxOfOrNull { it.id } ?: last
             if (last > 0) {

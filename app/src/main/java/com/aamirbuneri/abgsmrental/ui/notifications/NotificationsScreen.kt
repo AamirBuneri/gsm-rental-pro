@@ -66,7 +66,7 @@ import com.aamirbuneri.abgsmrental.ui.theme.AB
 import com.aamirbuneri.abgsmrental.ui.util.ago
 import kotlinx.coroutines.launch
 
-class NoticesVM(private val api: Api) : ViewModel() {
+class NoticesVM(private val api: Api, private val admin: Boolean = false) : ViewModel() {
     var items by mutableStateOf<List<Notice>?>(null)
         private set
     var unread by mutableStateOf(0)
@@ -86,7 +86,7 @@ class NoticesVM(private val api: Api) : ViewModel() {
         viewModelScope.launch {
             if (pull) refreshing = true
             try {
-                val p = api.notifications(limit = 30)
+                val p = if (admin) api.adminNotifications(limit = 30) else api.notifications(limit = 30)
                 items = p.items; unread = p.unread; end = p.items.size < 30; error = null
             } catch (e: ApiException) {
                 error = e
@@ -102,7 +102,7 @@ class NoticesVM(private val api: Api) : ViewModel() {
         viewModelScope.launch {
             loadingMore = true
             try {
-                val p = api.notifications(beforeId = last, limit = 30)
+                val p = if (admin) api.adminNotifications(beforeId = last, limit = 30) else api.notifications(beforeId = last, limit = 30)
                 items = items.orEmpty() + p.items; end = p.items.size < 30
             } catch (e: ApiException) {
                 error = e
@@ -116,21 +116,21 @@ class NoticesVM(private val api: Api) : ViewModel() {
         if (n.read) return
         items = items?.map { if (it.id == n.id) it.copy(read = true) else it }
         unread = (unread - 1).coerceAtLeast(0)
-        viewModelScope.launch { runCatching { unread = api.markRead(n.id).unread } }
+        viewModelScope.launch { runCatching { unread = (if (admin) api.adminMarkRead(n.id) else api.markRead(n.id)).unread } }
     }
 
     fun readAll() {
         items = items?.map { it.copy(read = true) }
         unread = 0
-        viewModelScope.launch { runCatching { api.markRead(null) } }
+        viewModelScope.launch { runCatching { if (admin) api.adminMarkRead(null) else api.markRead(null) } }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NotificationsScreen(nav: NavHostController, shell: Shell) {
+fun NotificationsScreen(nav: NavHostController, shell: Shell, admin: Boolean = false) {
     val api = LocalContext.current.container.api
-    val vm: NoticesVM = viewModel(key = "notices") { NoticesVM(api) }
+    val vm: NoticesVM = viewModel(key = if (admin) "a_notices" else "notices") { NoticesVM(api, admin) }
     LaunchedEffect(vm.unread) { shell.unread = vm.unread }
     ScreenBackground {
         Column(Modifier.fillMaxSize()) {
@@ -152,13 +152,14 @@ fun NotificationsScreen(nav: NavHostController, shell: Shell) {
                 when {
                     list == null && err != null -> ErrorState(err.message ?: "", err.offline) { vm.refresh() }
                     list == null -> LoadingCards(6, 72.dp)
-                    list.isEmpty() -> EmptyState(Icons.Outlined.NotificationsNone, "All caught up", "Rental, order and wallet updates will show up here.")
+                    list.isEmpty() -> EmptyState(Icons.Outlined.NotificationsNone, "All caught up", if (admin) "New sign-ups, orders and alerts will show up here." else "Rental, order and wallet updates will show up here.")
                     else -> LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         if (err != null) item { InlineError(err.message) }
                         items(list, key = { it.id }) { n ->
                             NoticeRow(n) {
                                 vm.read(n)
-                                when {
+                                if (admin) openAdminLink(nav, n)
+                                else when {
                                     n.rentalId != null -> nav.navigate(Routes.rental(n.rentalId))
                                     n.orderId != null -> nav.navigate(Routes.order(n.orderId!!))
                                     n.link.contains("wallet") -> nav.navigate(Routes.WALLET)
@@ -203,5 +204,19 @@ private fun NoticeRow(n: Notice, onClick: () -> Unit) {
                 Text(ago(n.createdAt), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f))
             }
         }
+    }
+}
+
+/** Admin notification → the matching admin screen (links are the website's admin pages). */
+private fun openAdminLink(nav: NavHostController, n: Notice) {
+    val link = n.link
+    fun id(re: String) = Regex(re).find(link)?.groupValues?.get(1)?.toIntOrNull()
+    when {
+        n.rentalId != null -> nav.navigate(com.aamirbuneri.abgsmrental.ui.admin.AdminRoutes.rental(n.rentalId))
+        id("/services/orders/(\\d+)") != null -> nav.navigate(com.aamirbuneri.abgsmrental.ui.admin.AdminRoutes.order(id("/services/orders/(\\d+)")!!))
+        id("/resellers/(\\d+)") != null -> nav.navigate(com.aamirbuneri.abgsmrental.ui.admin.AdminRoutes.reseller(id("/resellers/(\\d+)")!!))
+        id("/rentals/(\\d+)") != null -> nav.navigate(com.aamirbuneri.abgsmrental.ui.admin.AdminRoutes.rental(id("/rentals/(\\d+)")!!))
+        id("/tools/(\\d+)") != null -> nav.navigate(com.aamirbuneri.abgsmrental.ui.admin.AdminRoutes.slots(id("/tools/(\\d+)")!!))
+        link.contains("/admin/tools") || link.contains("/admin/accounts") -> nav.navigate(com.aamirbuneri.abgsmrental.ui.admin.AdminRoutes.TOOLS)
     }
 }
