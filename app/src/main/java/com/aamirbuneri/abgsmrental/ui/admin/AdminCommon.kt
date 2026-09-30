@@ -143,7 +143,7 @@ class PagedVM<T>(
         }
     }
 
-    fun setFilter(f: String) {
+    fun pick(f: String) {
         if (f == filter) return
         filter = f; items = null; load()
     }

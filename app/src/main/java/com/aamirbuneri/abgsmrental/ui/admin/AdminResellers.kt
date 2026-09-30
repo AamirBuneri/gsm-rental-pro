@@ -102,7 +102,7 @@ fun AdminResellersScreen(nav: NavHostController, admin: AdminShellState) {
         PagedVM(admin.resellerFilter ?: "all", { it.id }) { f, q, p -> api.adminResellers(f, q, p) }
     }
     LaunchedEffect(admin.resellerFilter) {
-        admin.resellerFilter?.let { vm.setFilter(it); admin.resellerFilter = null }
+        admin.resellerFilter?.let { vm.pick(it); admin.resellerFilter = null }
     }
     LaunchedEffect(vm.counts) { vm.counts["pending"]?.let { admin.pendingRegistrations = it } }
     val c = vm.counts
@@ -121,7 +121,7 @@ fun AdminResellersScreen(nav: NavHostController, admin: AdminShellState) {
                                 FilterOption("debt", "In debt", c["debt"]),
                                 FilterOption("disabled", "Disabled", c["disabled"]),
                             ),
-                            vm.filter, { vm.setFilter(it) },
+                            vm.filter, { vm.pick(it) },
                         )
                     }
                 }

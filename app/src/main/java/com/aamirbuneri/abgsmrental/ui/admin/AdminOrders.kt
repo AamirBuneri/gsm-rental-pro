@@ -76,7 +76,7 @@ fun AdminOrdersScreen(nav: NavHostController, admin: AdminShellState) {
         PagedVM("open", { it.id }) { f, q, p -> api.adminOrders(f, q, p) }
     }
     LaunchedEffect(admin.orderFilter) {
-        admin.orderFilter?.let { vm.setFilter(it); admin.orderFilter = null }
+        admin.orderFilter?.let { vm.pick(it); admin.orderFilter = null }
     }
     LaunchedEffect(Unit) { while (true) { delay(30_000); vm.load() } }
     LaunchedEffect(vm.items) {
@@ -98,7 +98,7 @@ fun AdminOrdersScreen(nav: NavHostController, admin: AdminShellState) {
                                 FilterOption("failed", "Failed", c["failed"]),
                                 FilterOption("all", "All"),
                             ),
-                            vm.filter, { vm.setFilter(it) },
+                            vm.filter, { vm.pick(it) },
                         )
                     }
                 }

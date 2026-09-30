@@ -81,7 +81,7 @@ fun AdminRentalsScreen(nav: NavHostController, admin: AdminShellState) {
         PagedVM("active", { it.id }) { f, q, p -> api.adminRentals(f, q, p) }
     }
     LaunchedEffect(admin.rentalFilter) {
-        admin.rentalFilter?.let { vm.setFilter(it); admin.rentalFilter = null }
+        admin.rentalFilter?.let { vm.pick(it); admin.rentalFilter = null }
     }
     LaunchedEffect(Unit) { while (true) { delay(45_000); vm.load() } }
     val c = vm.counts
@@ -100,7 +100,7 @@ fun AdminRentalsScreen(nav: NavHostController, admin: AdminShellState) {
                                 FilterOption("returned", "Returned", c["returned"]),
                                 FilterOption("all", "All", c["all"]),
                             ),
-                            vm.filter, { vm.setFilter(it) },
+                            vm.filter, { vm.pick(it) },
                         )
                     }
                 }
