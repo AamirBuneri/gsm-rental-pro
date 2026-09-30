@@ -128,13 +128,17 @@ abstract class AppFlowBase(private val theme: String) {
     }
 
     private fun back() {
-        back()
+        rule.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
+        rule.mainClock.advanceTimeBy(600)
     }
 
     @Test
     fun fullFlow() {
         // the loading shimmer and the countdown tick forever: drive the clock by hand
         rule.mainClock.autoAdvance = false
+        // brand splash
+        rule.mainClock.advanceTimeBy(300)
+        shot("00-splash")
         // splash → setup
         waitText("Connect to your panel")
         shot("01-setup")
@@ -156,8 +160,8 @@ abstract class AppFlowBase(private val theme: String) {
         shot("04-rent")
         rule.onNodeWithText("UnlockTool").performClick()
         waitText("Choose a plan")
-        shot("05-rent-sheet")
         rule.onNodeWithText("6 Hours").performClick()
+        shot("05-rent-sheet")
         rule.onNodeWithText("Rent now", substring = true).performClick()
         waitText("is ready")
         shot("06-rent-done")

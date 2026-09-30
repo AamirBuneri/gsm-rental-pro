@@ -40,11 +40,13 @@ import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -101,13 +103,16 @@ fun Modifier.brandGlow(green: Color, blue: Color): Modifier = drawBehind {
 @Composable
 fun ScreenBackground(modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
     val b = AB.brand
-    Box(
-        modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .brandGlow(b.glowGreen, b.glowBlue),
-        content = content,
-    )
+    // screens outside a Surface would otherwise draw text in the default (black) colour in dark mode
+    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
+        Box(
+            modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .brandGlow(b.glowGreen, b.glowBlue),
+            content = content,
+        )
+    }
 }
 
 /** Card with a hairline border — the main building block. */

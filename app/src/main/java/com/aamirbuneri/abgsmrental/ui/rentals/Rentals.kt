@@ -276,7 +276,7 @@ private fun RentalDetail(r: Rental, refreshError: String?) {
             Text("Details", style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(6.dp))
             InfoRow("Order", r.number)
-            InfoRow("Plan", listOf(r.plan, duration(r.minutes)).filter { it.isNotBlank() }.distinct().joinToString(" · "))
+            InfoRow("Plan", listOf(r.plan, duration(r.minutes)).filter { it.isNotBlank() }.distinctBy { it.lowercase() }.joinToString(" · "))
             InfoRow("Price", money(r.price, r.currency), valueColor = MaterialTheme.colorScheme.primary)
             InfoRow("Started", dateTime(r.startedAt))
             InfoRow("Ends", dateTime(r.expiresAt))
