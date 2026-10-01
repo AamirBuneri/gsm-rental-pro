@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.aamirbuneri.abgsmrental.SignUpDarkTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-10-01T10:44:09" hostname="runnervm8df0l" time="10.951">
+  <properties/>
+  <testcase name="signUp" classname="com.aamirbuneri.abgsmrental.SignUpDarkTest" time="10.951"/>
+  <system-out><![CDATA[STEP wait Connect to your panel
+STEP wait Welcome back
+STEP wait Create account
+STEP wait Forgot your password?
+STEP wait reset link is on its way
+STEP shot 20-forgot-sent
+STEP wait Welcome back
+STEP wait Create your account
+STEP shot 21-register
+STEP tap tag cur_USD → 1
+STEP shot 22-register-filled
+STEP tap tag reg_submit → 1
+STEP wait Waiting for approval
+STEP shot 23-waiting-approval
+STEP tap tag check_again → 1
+STEP wait Not approved yet
+STEP tap tag check_again → 1
+STEP wait Wallet balance
+STEP shot 24-signed-in-after-approval
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

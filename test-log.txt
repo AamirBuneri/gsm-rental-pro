@@ -1,0 +1,347 @@
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugBuildConfig UP-TO-DATE
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+> Task :app:compileDebugKotlin UP-TO-DATE
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:compileDebugJavaWithJavac UP-TO-DATE
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:mergeDebugShaders UP-TO-DATE
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:javaPreCompileDebugUnitTest
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :app:packageDebugUnitTestForUnitTest
+> Task :app:generateDebugUnitTestConfig
+> Task :app:processDebugJavaRes UP-TO-DATE
+> Task :app:bundleDebugClassesToCompileJar
+> Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:compileDebugUnitTestKotlin
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :app:processDebugUnitTestJavaRes
+
+> Task :app:testDebugUnitTest
+
+AdminDarkTest > admin STANDARD_OUT
+    STEP wait Connect to your panel
+    STEP wait Welcome back
+    STEP wait Create account
+    STEP wait Sales today
+    STEP wait Needs attention
+    STEP shot 30-admin-home
+    STEP wait Samsung Network Unlock
+    STEP shot 31-admin-orders
+
+OpenGLRenderer W 10-01 10:39:09  2723  2767 Trying to start new animators on 0x7f118bda64b0 (UnprojectedRipple) without an animation handle!
+OpenGLRenderer W 10-01 10:39:10  2723  2767 Trying to start new animators on 0x7f1189fbee30 (UnprojectedRipple) without an animation handle!
+
+> Task :app:testDebugUnitTest
+    STEP tap text Redmi Note 12 → 1
+    STEP wait Start work
+    STEP shot 32-admin-order
+    STEP wait Bilal Ahmed
+    STEP shot 33-admin-resellers
+    STEP tap text Ali Khan → 1
+    STEP wait Wallet history
+    STEP shot 34-admin-reseller
+    STEP tap text Add money → 1
+    STEP wait Balance now
+    STEP dialog screenshot skipped: androidx.test.espresso.AppNotIdleException: Compose did not get idle after 108296 attempts in 60 SECONDS. Please check your measure/layout lambdas, they may be causing an infinite composition loop. Or set Espresso's master idling policy if you require a longer timeout. The following Idle Conditions failed .
+    STEP wait Usman Mobiles
+    STEP shot 36-admin-rentals
+
+OpenGLRenderer W 10-01 10:41:11  2723  2767 Trying to start new animators on 0x7f118bda64b0 (UnprojectedRipple) without an animation handle!
+OpenGLRenderer W 10-01 10:41:12  2723  2767 Trying to start new animators on 0x7f1189fbee30 (UnprojectedRipple) without an animation handle!
+
+> Task :app:testDebugUnitTest
+    STEP tap text Ali Khan → 1
+    STEP wait Renter’s login
+    STEP shot 37-admin-rental
+    STEP wait Tools, plans & slots
+    STEP shot 38-admin-more
+    STEP tap text Tools, plans & slots → 1
+    STEP wait Griffin Unlocker
+    STEP shot 39-admin-tools
+    STEP tap text UnlockTool → 1
+    STEP wait Slot B
+    STEP shot 40-admin-slots
+    STEP wait Notifications
+    STEP tap text Notifications → 1
+    STEP wait New registration
+    STEP shot 41-admin-notifications
+    STEP wait Send a message
+    STEP tap text Send a message → 1
+    STEP wait Shows in the bell
+    STEP shot 42-admin-compose
+    STEP tap text Chat with resellers → 1
+    STEP wait Slot A login not working
+    STEP shot 43-admin-chats
+    STEP tap text Ali Khan → 1
+    STEP wait Checking now
+    STEP shot 44-admin-chat
+    STEP tap text Settings → 1
+    STEP wait General
+    STEP shot 45-admin-settings
+    STEP tap text General → 1
+    STEP wait System name
+    STEP shot 46-admin-settings-general
+    STEP tap text Website posts → 1
+    STEP wait Xiaomi FRP Remove
+    STEP shot 47-admin-website
+
+AdminDarkTest > admin PASSED
+
+AdminLightTest > admin STANDARD_OUT
+    STEP wait Connect to your panel
+    STEP wait Welcome back
+    STEP wait Create account
+    STEP wait Sales today
+    STEP wait Needs attention
+    STEP shot 30-admin-home
+    STEP wait Samsung Network Unlock
+    STEP shot 31-admin-orders
+
+OpenGLRenderer W 10-01 10:41:26  2946  2978 Trying to start new animators on 0x7f66d3648210 (UnprojectedRipple) without an animation handle!
+OpenGLRenderer W 10-01 10:41:27  2946  2978 Trying to start new animators on 0x7f66f615d7e0 (UnprojectedRipple) without an animation handle!
+
+> Task :app:testDebugUnitTest
+    STEP tap text Redmi Note 12 → 1
+    STEP wait Start work
+    STEP shot 32-admin-order
+    STEP wait Bilal Ahmed
+    STEP shot 33-admin-resellers
+    STEP tap text Ali Khan → 1
+    STEP wait Wallet history
+    STEP shot 34-admin-reseller
+    STEP tap text Add money → 1
+    STEP wait Balance now
+    STEP dialog screenshot skipped: androidx.test.espresso.AppNotIdleException: Compose did not get idle after 116149 attempts in 60 SECONDS. Please check your measure/layout lambdas, they may be causing an infinite composition loop. Or set Espresso's master idling policy if you require a longer timeout. The following Idle Conditions failed .
+    STEP wait Usman Mobiles
+    STEP shot 36-admin-rentals
+
+OpenGLRenderer W 10-01 10:43:28  2946  2978 Trying to start new animators on 0x7f66d3648210 (UnprojectedRipple) without an animation handle!
+OpenGLRenderer W 10-01 10:43:29  2946  2978 Trying to start new animators on 0x7f66f615d7e0 (UnprojectedRipple) without an animation handle!
+
+> Task :app:testDebugUnitTest
+    STEP tap text Ali Khan → 1
+    STEP wait Renter’s login
+    STEP shot 37-admin-rental
+    STEP wait Tools, plans & slots
+    STEP shot 38-admin-more
+    STEP tap text Tools, plans & slots → 1
+    STEP wait Griffin Unlocker
+    STEP shot 39-admin-tools
+    STEP tap text UnlockTool → 1
+    STEP wait Slot B
+    STEP shot 40-admin-slots
+    STEP wait Notifications
+    STEP tap text Notifications → 1
+    STEP wait New registration
+    STEP shot 41-admin-notifications
+    STEP wait Send a message
+    STEP tap text Send a message → 1
+    STEP wait Shows in the bell
+    STEP shot 42-admin-compose
+    STEP tap text Chat with resellers → 1
+    STEP wait Slot A login not working
+    STEP shot 43-admin-chats
+    STEP tap text Ali Khan → 1
+    STEP wait Checking now
+    STEP shot 44-admin-chat
+    STEP tap text Settings → 1
+    STEP wait General
+    STEP shot 45-admin-settings
+    STEP tap text General → 1
+    STEP wait System name
+    STEP shot 46-admin-settings-general
+    STEP tap text Website posts → 1
+    STEP wait Xiaomi FRP Remove
+    STEP shot 47-admin-website
+
+AdminLightTest > admin PASSED
+
+AppFlowDarkTest > fullFlow STANDARD_OUT
+    STEP shot 00-splash
+    STEP wait Connect to your panel
+    STEP shot 01-setup
+    STEP wait Welcome back
+    STEP wait Create account
+    STEP shot 02-login
+    STEP wait Wallet balance
+    STEP shot 03-home
+    STEP wait Griffin Unlocker
+    STEP shot 04-rent
+
+OpenGLRenderer W 10-01 10:43:44  3037  3070 Trying to start new animators on 0x7f1ebf2f0690 (UnprojectedRipple) without an animation handle!
+OpenGLRenderer W 10-01 10:43:44  3037  3070 Trying to start new animators on 0x7f1ed9fbb4a0 (UnprojectedRipple) without an animation handle!
+OpenGLRenderer W 10-01 10:43:44  3037  3070 Trying to start new animators on 0x7f1ebf2f0690 (UnprojectedRipple) without an animation handle!
+OpenGLRenderer W 10-01 10:43:45  3037  3070 Trying to start new animators on 0x7f1eda2b95e0 (UnprojectedRipple) without an animation handle!
+OpenGLRenderer W 10-01 10:43:45  3037  3070 Trying to start new animators on 0x7f1ed9fbb4a0 (UnprojectedRipple) without an animation handle!
+OpenGLRenderer W 10-01 10:43:45  3037  3070 Trying to start new animators on 0x7f1ebf2f0690 (UnprojectedRipple) without an animation handle!
+OpenGLRenderer W 10-01 10:43:46  3037  3070 Trying to start new animators on 0x7f1ebf2f0690 (UnprojectedRipple) without an animation handle!
+OpenGLRenderer W 10-01 10:43:46  3037  3070 Trying to start new animators on 0x7f1ed9ddd780 (UnprojectedRipple) without an animation handle!
+
+> Task :app:testDebugUnitTest
+    STEP wait Choose a plan
+    STEP shot 05-rent-sheet
+    STEP wait is ready
+    STEP shot 06-rent-done
+    STEP wait Show login
+    STEP shot 07-rentals
+    STEP wait Tool login
+    STEP shot 08-rental-detail
+    STEP wait Xiaomi FRP Remove
+    STEP shot 09-services
+
+OpenGLRenderer W 10-01 10:43:47  3037  3070 Trying to start new animators on 0x7f1ebf2f0690 (UnprojectedRipple) without an animation handle!
+OpenGLRenderer W 10-01 10:43:47  3037  3070 Trying to start new animators on 0x7f1ed9fbb4a0 (UnprojectedRipple) without an animation handle!
+OpenGLRenderer W 10-01 10:43:48  3037  3070 Trying to start new animators on 0x7f1ed9ddd780 (UnprojectedRipple) without an animation handle!
+
+> Task :app:testDebugUnitTest
+    STEP wait Remote access
+    STEP shot 10-order-form
+    STEP wait Poco X5
+    STEP shot 11-my-orders
+    STEP wait FRP removed
+    STEP shot 12-order-detail
+    STEP wait Theme
+    STEP shot 13-account
+    STEP wait Wallet top-up
+    STEP shot 14-wallet
+    STEP wait Tool ready: UnlockTool
+    STEP shot 15-notifications
+    STEP tap text Invoices → 1
+    STEP wait INV-261001-0031
+    STEP shot 16-invoices
+    STEP tap text Chat with support → 1
+    STEP wait Checking now
+    STEP shot 17-chat
+    STEP tap text Profile & security → 1
+    STEP wait Two-step sign-in
+    STEP shot 18-profile
+
+AppFlowDarkTest > fullFlow PASSED
+
+AppFlowLightTest > fullFlow STANDARD_OUT
+    STEP shot 00-splash
+    STEP wait Connect to your panel
+    STEP shot 01-setup
+    STEP wait Welcome back
+    STEP wait Create account
+    STEP shot 02-login
+    STEP wait Wallet balance
+    STEP shot 03-home
+    STEP wait Griffin Unlocker
+    STEP shot 04-rent
+
+OpenGLRenderer W 10-01 10:44:01  3113  3144 Trying to start new animators on 0x7f6caf250fc0 (UnprojectedRipple) without an animation handle!
+OpenGLRenderer W 10-01 10:44:02  3113  3144 Trying to start new animators on 0x7f6cd6358470 (UnprojectedRipple) without an animation handle!
+OpenGLRenderer W 10-01 10:44:02  3113  3144 Trying to start new animators on 0x7f6caf250fc0 (UnprojectedRipple) without an animation handle!
+OpenGLRenderer W 10-01 10:44:02  3113  3144 Trying to start new animators on 0x7f6cd61c4720 (UnprojectedRipple) without an animation handle!
+OpenGLRenderer W 10-01 10:44:03  3113  3144 Trying to start new animators on 0x7f6cd6358470 (UnprojectedRipple) without an animation handle!
+OpenGLRenderer W 10-01 10:44:03  3113  3144 Trying to start new animators on 0x7f6caf250fc0 (UnprojectedRipple) without an animation handle!
+OpenGLRenderer W 10-01 10:44:03  3113  3144 Trying to start new animators on 0x7f6caf250fc0 (UnprojectedRipple) without an animation handle!
+OpenGLRenderer W 10-01 10:44:03  3113  3144 Trying to start new animators on 0x7f6cacfb3ed0 (UnprojectedRipple) without an animation handle!
+
+> Task :app:testDebugUnitTest
+    STEP wait Choose a plan
+    STEP shot 05-rent-sheet
+    STEP wait is ready
+    STEP shot 06-rent-done
+    STEP wait Show login
+    STEP shot 07-rentals
+    STEP wait Tool login
+    STEP shot 08-rental-detail
+    STEP wait Xiaomi FRP Remove
+    STEP shot 09-services
+
+OpenGLRenderer W 10-01 10:44:04  3113  3144 Trying to start new animators on 0x7f6caf250fc0 (UnprojectedRipple) without an animation handle!
+OpenGLRenderer W 10-01 10:44:05  3113  3144 Trying to start new animators on 0x7f6cd6358470 (UnprojectedRipple) without an animation handle!
+OpenGLRenderer W 10-01 10:44:06  3113  3144 Trying to start new animators on 0x7f6cacfb3ed0 (UnprojectedRipple) without an animation handle!
+
+> Task :app:testDebugUnitTest
+    STEP wait Remote access
+    STEP shot 10-order-form
+    STEP wait Poco X5
+    STEP shot 11-my-orders
+    STEP wait FRP removed
+    STEP shot 12-order-detail
+    STEP wait Theme
+    STEP shot 13-account
+    STEP wait Wallet top-up
+    STEP shot 14-wallet
+    STEP wait Tool ready: UnlockTool
+    STEP shot 15-notifications
+    STEP tap text Invoices → 1
+    STEP wait INV-261001-0031
+    STEP shot 16-invoices
+    STEP tap text Chat with support → 1
+    STEP wait Checking now
+    STEP shot 17-chat
+    STEP tap text Profile & security → 1
+    STEP wait Two-step sign-in
+    STEP shot 18-profile
+
+AppFlowLightTest > fullFlow PASSED
+
+SignUpDarkTest > signUp STANDARD_OUT
+    STEP wait Connect to your panel
+    STEP wait Welcome back
+    STEP wait Create account
+    STEP wait Forgot your password?
+    STEP wait reset link is on its way
+    STEP shot 20-forgot-sent
+    STEP wait Welcome back
+    STEP wait Create your account
+    STEP shot 21-register
+    STEP tap tag cur_USD → 1
+    STEP shot 22-register-filled
+    STEP tap tag reg_submit → 1
+    STEP wait Waiting for approval
+    STEP shot 23-waiting-approval
+    STEP tap tag check_again → 1
+    STEP wait Not approved yet
+    STEP tap tag check_again → 1
+    STEP wait Wallet balance
+    STEP shot 24-signed-in-after-approval
+
+SignUpDarkTest > signUp PASSED
+
+SignUpLightTest > signUp STANDARD_OUT
+    STEP wait Connect to your panel
+    STEP wait Welcome back
+    STEP wait Create account
+    STEP wait Forgot your password?
+    STEP wait reset link is on its way
+    STEP shot 20-forgot-sent
+    STEP wait Welcome back
+    STEP wait Create your account
+    STEP shot 21-register
+    STEP tap tag cur_USD → 1
+    STEP shot 22-register-filled
+    STEP tap tag reg_submit → 1
+    STEP wait Waiting for approval
+    STEP shot 23-waiting-approval
+    STEP tap tag check_again → 1
+    STEP wait Not approved yet
+    STEP tap tag check_again → 1
+    STEP wait Wallet balance
+    STEP shot 24-signed-in-after-approval
+
+SignUpLightTest > signUp PASSED
+
+BUILD SUCCESSFUL in 5m 41s
+28 actionable tasks: 8 executed, 20 up-to-date

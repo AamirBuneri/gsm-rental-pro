@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.aamirbuneri.abgsmrental.AdminDarkTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-10-01T10:38:56" hostname="runnervm8df0l" time="140.052">
+  <properties/>
+  <testcase name="admin" classname="com.aamirbuneri.abgsmrental.AdminDarkTest" time="140.052"/>
+  <system-out><![CDATA[STEP wait Connect to your panel
+STEP wait Welcome back
+STEP wait Create account
+STEP wait Sales today
+STEP wait Needs attention
+STEP shot 30-admin-home
+STEP wait Samsung Network Unlock
+STEP shot 31-admin-orders
+STEP tap text Redmi Note 12 → 1
+STEP wait Start work
+STEP shot 32-admin-order
+STEP wait Bilal Ahmed
+STEP shot 33-admin-resellers
+STEP tap text Ali Khan → 1
+STEP wait Wallet history
+STEP shot 34-admin-reseller
+STEP tap text Add money → 1
+STEP wait Balance now
+STEP dialog screenshot skipped: androidx.test.espresso.AppNotIdleException: Compose did not get idle after 108296 attempts in 60 SECONDS. Please check your measure/layout lambdas, they may be causing an infinite composition loop. Or set Espresso's master idling policy if you require a longer timeout. The following Idle Conditions failed .
+STEP wait Usman Mobiles
+STEP shot 36-admin-rentals
+STEP tap text Ali Khan → 1
+STEP wait Renter’s login
+STEP shot 37-admin-rental
+STEP wait Tools, plans & slots
+STEP shot 38-admin-more
+STEP tap text Tools, plans & slots → 1
+STEP wait Griffin Unlocker
+STEP shot 39-admin-tools
+STEP tap text UnlockTool → 1
+STEP wait Slot B
+STEP shot 40-admin-slots
+STEP wait Notifications
+STEP tap text Notifications → 1
+STEP wait New registration
+STEP shot 41-admin-notifications
+STEP wait Send a message
+STEP tap text Send a message → 1
+STEP wait Shows in the bell
+STEP shot 42-admin-compose
+STEP tap text Chat with resellers → 1
+STEP wait Slot A login not working
+STEP shot 43-admin-chats
+STEP tap text Ali Khan → 1
+STEP wait Checking now
+STEP shot 44-admin-chat
+STEP tap text Settings → 1
+STEP wait General
+STEP shot 45-admin-settings
+STEP tap text General → 1
+STEP wait System name
+STEP shot 46-admin-settings-general
+STEP tap text Website posts → 1
+STEP wait Xiaomi FRP Remove
+STEP shot 47-admin-website
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

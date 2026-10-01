@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.aamirbuneri.abgsmrental.AppFlowDarkTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-10-01T10:43:34" hostname="runnervm8df0l" time="16.933">
+  <properties/>
+  <testcase name="fullFlow" classname="com.aamirbuneri.abgsmrental.AppFlowDarkTest" time="16.933"/>
+  <system-out><![CDATA[STEP shot 00-splash
+STEP wait Connect to your panel
+STEP shot 01-setup
+STEP wait Welcome back
+STEP wait Create account
+STEP shot 02-login
+STEP wait Wallet balance
+STEP shot 03-home
+STEP wait Griffin Unlocker
+STEP shot 04-rent
+STEP wait Choose a plan
+STEP shot 05-rent-sheet
+STEP wait is ready
+STEP shot 06-rent-done
+STEP wait Show login
+STEP shot 07-rentals
+STEP wait Tool login
+STEP shot 08-rental-detail
+STEP wait Xiaomi FRP Remove
+STEP shot 09-services
+STEP wait Remote access
+STEP shot 10-order-form
+STEP wait Poco X5
+STEP shot 11-my-orders
+STEP wait FRP removed
+STEP shot 12-order-detail
+STEP wait Theme
+STEP shot 13-account
+STEP wait Wallet top-up
+STEP shot 14-wallet
+STEP wait Tool ready: UnlockTool
+STEP shot 15-notifications
+STEP tap text Invoices → 1
+STEP wait INV-261001-0031
+STEP shot 16-invoices
+STEP tap text Chat with support → 1
+STEP wait Checking now
+STEP shot 17-chat
+STEP tap text Profile & security → 1
+STEP wait Two-step sign-in
+STEP shot 18-profile
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
