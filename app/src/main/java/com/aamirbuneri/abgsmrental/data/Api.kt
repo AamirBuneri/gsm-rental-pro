@@ -17,6 +17,7 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -217,6 +218,61 @@ class Api(
         call("POST", "/admin/slots/$id/password", AdminSlot.serializer(), body = buildJsonObject { put("password", password) })
 
     suspend fun adminSlotToggle(id: Int): AdminSlot = call("POST", "/admin/slots/$id/toggle", AdminSlot.serializer(), body = JsonObject(emptyMap()))
+
+    // ── background alerts + the website's own pages (3.5+) ─────────────────
+
+    /** New notifications since [since] (the background alerts call this every ~30–60 s). */
+    suspend fun ping(since: Int): PingResult =
+        call("GET", "/app/ping", PingResult.serializer(), query = mapOf("since" to "$since"), signOutOn401 = false)
+
+    /** Open a page of the website's admin / reseller panel; returns its data (see ApiBridgeController). */
+    suspend fun page(path: String, query: Map<String, String> = emptyMap()): BridgeResult =
+        bridge(buildJsonObject {
+            put("method", "GET"); put("path", path)
+            put("query", JsonObject(query.mapValues { JsonPrimitive(it.value) }))
+        })
+
+    /** Send a form of the website's panel; throws with the site's message when it was refused. */
+    suspend fun submit(path: String, data: JsonObject = JsonObject(emptyMap())): BridgeResult =
+        bridge(buildJsonObject { put("method", "POST"); put("path", path); put("data", data) })
+
+    /** A form with files (pictures). [fields] may repeat a name for lists, e.g. "ids[]". */
+    suspend fun submitFiles(path: String, fields: List<Pair<String, String>>, files: List<FilePart>): BridgeResult {
+        val body = MultipartBody.Builder().setType(MultipartBody.FORM).apply {
+            addFormDataPart("_method", "POST")
+            addFormDataPart("_path", path)
+            fields.forEach { (k, v) -> addFormDataPart(k, v) }
+            files.forEach { f -> addFormDataPart(f.field, f.fileName, f.bytes.toRequestBody(f.mime.toMediaType())) }
+        }.build()
+        return bridgeRaw(body)
+    }
+
+    private suspend fun bridge(payload: JsonObject): BridgeResult = bridgeRaw(payload.toString().toRequestBody(JSON))
+
+    private suspend fun bridgeRaw(body: okhttp3.RequestBody): BridgeResult {
+        val base = normalizeSite(prefs.site())
+        val token = prefs.token()
+        if (base.isEmpty() || token.isNullOrEmpty()) { onSignedOut(); throw ApiException(401, "Please sign in.") }
+        val req = Request.Builder().url("$base/index.php?r=" + enc("/api/v1/bridge"))
+            .header("Accept", "application/json").header("User-Agent", userAgent)
+            .header("Authorization", "Bearer $token").header("X-API-Key", token)
+            .post(body).build()
+        val (code, text) = withContext(Dispatchers.IO) {
+            try {
+                http.newCall(req).execute().use { r -> r.code to (r.body?.string().orEmpty()) }
+            } catch (e: IOException) {
+                throw ApiException(0, "Can’t reach the server. Check your internet connection.")
+            }
+        }
+        val root = runCatching { json.parseToJsonElement(text).jsonObject }.getOrElse {
+            throw ApiException(code, if (code == 404) "Your site needs an update for this (GSM Rental Pro 3.5 or newer)." else "Unexpected answer from the server ($code).")
+        }
+        if (code == 404 && root["ok"] == null) throw ApiException(404, "Your site needs an update for this (GSM Rental Pro 3.5 or newer).")
+        val res = json.decodeFromJsonElement(BridgeResult.serializer(), root)
+        if (code == 401) { onSignedOut(); throw ApiException(401, res.error ?: "Please sign in again.") }
+        if (!res.ok) throw ApiException(if (res.status >= 400) res.status else if (code >= 400) code else 400, res.error ?: "Something went wrong.", (root["state"] as? JsonPrimitive)?.contentOrNull)
+        return res
+    }
 
     // ── transport ──────────────────────────────────────────────────────────
 

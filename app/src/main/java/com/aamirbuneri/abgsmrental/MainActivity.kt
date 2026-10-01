@@ -22,6 +22,24 @@ import androidx.lifecycle.lifecycleScope
 
 class MainActivity : ComponentActivity() {
 
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        handleOpen(intent)
+    }
+
+    /** A tapped notification: its button link, or the notification itself. */
+    private fun handleOpen(intent: android.content.Intent?) {
+        intent ?: return
+        val link = intent.getStringExtra(com.aamirbuneri.abgsmrental.work.Notifier.EXTRA_LINK)
+        val notice = intent.getIntExtra(com.aamirbuneri.abgsmrental.work.Notifier.EXTRA_NOTICE, 0)
+        when {
+            !link.isNullOrBlank() -> container.openLink.value = link
+            notice > 0 -> container.openLink.value = "notice:$notice"
+        }
+        intent.removeExtra(com.aamirbuneri.abgsmrental.work.Notifier.EXTRA_LINK)
+        intent.removeExtra(com.aamirbuneri.abgsmrental.work.Notifier.EXTRA_NOTICE)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val splash = installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -31,6 +49,7 @@ class MainActivity : ComponentActivity() {
         splash.setKeepOnScreenCondition { loaded.value == null }
         lifecycleScope.launch { loaded.value = container.prefs.settings.first() }
 
+        handleOpen(intent)
         enableEdgeToEdge()
         setContent {
             val first by loaded.collectAsState()

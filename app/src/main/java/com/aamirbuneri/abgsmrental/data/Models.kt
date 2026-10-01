@@ -232,6 +232,11 @@ data class Notice(
     @SerialName("rental_id") val rentalId: Int? = null,
     val link: String = "",
     @SerialName("created_at") val createdAt: String = "",
+    /** Rich messages (3.5+): picture, a button with a link. */
+    val image: String? = null,
+    @SerialName("action_label") val actionLabel: String? = null,
+    @SerialName("action_url") val actionUrl: String? = null,
+    val broadcast: Boolean = false,
 ) {
     /** Order id when the notification points at a service order. */
     val orderId: Int?
@@ -271,4 +276,11 @@ data class WalletPage(
     @SerialName("can_spend") val canSpend: Double? = null,
     @SerialName("topup_whatsapp") val topupWhatsapp: String = "",
     val items: List<LedgerEntry> = emptyList(),
+)
+
+@Serializable
+data class PingResult(
+    @SerialName("latest_id") val latestId: Int = 0,
+    val unread: Int = 0,
+    val items: List<Notice> = emptyList(),
 )

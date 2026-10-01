@@ -29,6 +29,8 @@ data class Settings(
     val siteName: String = "",
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val notifications: Boolean = true,
+    /** Background listener so alerts arrive while the app is closed. */
+    val liveAlerts: Boolean = true,
     val signedIn: Boolean = false,
     val username: String = "",
     /** reseller | admin | staff */
@@ -55,6 +57,8 @@ class Prefs(private val context: Context) {
         val role = stringPreferencesKey("role")
         val perms = stringPreferencesKey("perms")
         val askedPermission = booleanPreferencesKey("asked_notification_permission")
+        val liveAlerts = booleanPreferencesKey("live_alerts")
+        val askedBattery = booleanPreferencesKey("asked_battery")
     }
 
     val settings: Flow<Settings> = context.store.data.map { p ->
@@ -63,6 +67,7 @@ class Prefs(private val context: Context) {
             siteName = p[K.siteName].orEmpty(),
             themeMode = runCatching { ThemeMode.valueOf(p[K.theme] ?: "SYSTEM") }.getOrDefault(ThemeMode.SYSTEM),
             notifications = p[K.notifications] ?: true,
+            liveAlerts = p[K.liveAlerts] ?: true,
             signedIn = !p[K.token].isNullOrEmpty(),
             username = p[K.username].orEmpty(),
             role = p[K.role] ?: "reseller",
@@ -113,6 +118,12 @@ class Prefs(private val context: Context) {
     suspend fun askedPermission(): Boolean = context.store.data.first()[K.askedPermission] ?: false
 
     suspend fun setAskedPermission() = context.store.edit { it[K.askedPermission] = true }
+
+    suspend fun setLiveAlerts(on: Boolean) = context.store.edit { it[K.liveAlerts] = on }
+
+    suspend fun askedBattery(): Boolean = context.store.data.first()[K.askedBattery] ?: false
+
+    suspend fun setAskedBattery() = context.store.edit { it[K.askedBattery] = true }
 }
 
 /** AES-GCM with an Android Keystore key. Falls back to plain storage on the rare phone with a broken keystore. */

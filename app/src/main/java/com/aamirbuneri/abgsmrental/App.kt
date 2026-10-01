@@ -10,6 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 
@@ -33,6 +34,12 @@ class Container(val context: Context) {
     val prefs = Prefs(context)
 
     private val _signedOut = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
+    /** Unread notifications (updated by the background checks too). */
+    val unread = MutableStateFlow(0)
+
+    /** Where a tapped notification wants to go: a site path ("/reseller/tools/3"), a web link, or "notice:<id>". */
+    val openLink = MutableStateFlow<String?>(null)
 
     /** Fires when the site rejects the saved token (password changed, admin signed the phone out …). */
     val signedOut: SharedFlow<Unit> = _signedOut
