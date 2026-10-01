@@ -87,7 +87,8 @@ class FakeSite : Dispatcher() {
                 {"id":3,"name":"iCloud Info Check","category":"Apple","description":"","color":"#64748b","price":150,"currency":"PKR","quote":false,"eta_minutes":5,"needs_remote":false,"fields":[{"label":"IMEI / Serial","required":true}]}]""")
             r == "/api/v1/orders" -> ok("""[$ORDER_OPEN,$ORDER_DONE]""")
             r.startsWith("/api/v1/orders/") -> ok(ORDER_DONE)
-            r == "/api/v1/notifications" -> ok("""{"unread":2,"items":[
+            r == "/api/v1/notifications" -> ok("""{"unread":3,"items":[
+                {"id":10,"title":"🎉 UnlockTool 20% off today","message":"Rent **6 hours** for the price of 5 — _today only_. Details: https://abtools.pk/offer","type":"promo","read":false,"rental_id":null,"link":"","created_at":"2026-10-01T09:59:00Z","broadcast":true,"action_label":"Rent now","action_url":"/reseller/tools"},
                 {"id":9,"title":"Tool ready: UnlockTool","message":"Your rental RNT-261001-AB12 is active until 4:00 PM.","type":"success","read":false,"rental_id":1,"link":"/reseller/rentals","created_at":"2026-10-01T09:58:00Z"},
                 {"id":8,"title":"Order completed","message":"Xiaomi FRP Remove — done.","type":"info","read":false,"rental_id":null,"link":"/reseller/services/orders/5","created_at":"2026-09-30T18:00:00Z"},
                 {"id":7,"title":"Wallet topped up","message":"Rs 5,000 added to your wallet.","type":"success","read":true,"rental_id":null,"link":"/reseller/wallet","created_at":"2026-09-29T10:00:00Z"}]}""")
@@ -126,7 +127,43 @@ class FakeSite : Dispatcher() {
                 {"id":2,"name":"Slot B","tool":"UnlockTool","tool_id":1,"status":"available","username":"shop_user_08","email":"","account_expires_at":"2026-10-05T00:00:00Z","renter":null,"rental_id":null,"seconds_left":0,"notes":""},
                 {"id":4,"name":"Slot D","tool":"UnlockTool","tool_id":1,"status":"disabled","username":"shop_user_10","email":"","account_expires_at":null,"renter":null,"rental_id":null,"seconds_left":0,"notes":""}]}""")
             r.startsWith("/api/v1/admin/slots/") && r.endsWith("/secret") -> ok("""{"username":"shop_user_08","email":"","password":"B8-new!Pass"}""")
+            r == "/api/v1/app/ping" -> ok("""{"latest_id":${if (admin) 40 else 10},"unread":${if (admin) 2 else 3},"items":[]}""")
+            r == "/api/v1/bridge" -> bridge(Regex("\"path\":\"([^\"]*)\"").find(body)?.groupValues?.get(1).orEmpty(), admin)
             else -> MockResponse().setResponseCode(404).setBody("""{"error":"Not found"}""")
+        }
+    }
+
+    /** The website's own pages, as /api/v1/bridge answers them (3.5). */
+    private fun bridge(path: String, admin: Boolean): MockResponse {
+        fun page(view: String, data: String) = MockResponse().setHeader("Content-Type", "application/json").setBody("""{"ok":true,"kind":"view","status":200,"view":"$view","title":"","data":$data,"flash":[]}""")
+        fun json(data: String) = MockResponse().setHeader("Content-Type", "application/json").setBody("""{"ok":true,"kind":"json","status":200,"json":$data,"flash":[]}""")
+        return when (path) {
+            "/admin/tools" -> page("admin/tools", """{"tools":[
+                {"id":1,"name":"UnlockTool","color":"#22d3ee","is_active":1,"free_slots":2,"busy_slots":4,"total_slots":6,"dur_count":3,"min_price":"150.00","rental_count":"812"},
+                {"id":2,"name":"Chimera Tool","color":"#a855f7","is_active":1,"free_slots":0,"busy_slots":3,"total_slots":4,"dur_count":1,"min_price":"500.00","rental_count":"301"},
+                {"id":3,"name":"Griffin Unlocker","color":"#f59e0b","is_active":0,"free_slots":2,"busy_slots":0,"total_slots":2,"dur_count":1,"min_price":"1200.00","rental_count":"44"}]}""")
+            "/admin/tools/1/slots" -> page("admin/slots", """{"tool":{"id":1,"name":"UnlockTool","color":"#22d3ee"},"slots":[
+                {"id":1,"slot_name":"Slot A","username":"shop_user_07","status":"busy","renter_name":"Ali Khan","rental_id":11,"expiry_time":"2026-10-01T16:00:00Z","account_expires_at":"2026-12-30 00:00:00","total_paid":"4500","total_earned":"18450","renew_cost":"4500","renew_days":"30"},
+                {"id":2,"slot_name":"Slot B","username":"shop_user_08","status":"available","account_expires_at":"2026-10-05 00:00:00","total_paid":"4500","total_earned":"9100"},
+                {"id":4,"slot_name":"Slot D","username":"shop_user_10","status":"disabled","total_paid":"0","total_earned":"0"}]}""")
+            "/admin/messages" -> page("admin/messages", """{"resellers":[{"id":2,"username":"ali","full_name":"Ali Khan","phone":"923001112233","company_name":"Ali Mobile Zone"},{"id":5,"username":"usman","full_name":"Usman Mobiles","phone":"","company_name":""}],
+                "recent":[{"id":3,"title":"🎉 UnlockTool 20% off today","message":"Rent **6 hours** for the price of 5.","type":"promo","audience":"resellers","recipients":38,"read_count":"21","whatsapp":0,"via":"app","created_at":"2026-10-01T08:00:00Z","recalled_at":null}],
+                "tools":[{"id":1,"name":"UnlockTool"},{"id":2,"name":"Chimera Tool"}],"services":[{"id":1,"name":"Xiaomi FRP Remove"}],"teamCount":2,"whatsapp_number":"923001234567"}""")
+            "/api/chat/threads" -> json("""[{"id":2,"name":"Ali Khan","username":"ali","online":true,"unread":2,"last":"Slot A login not working, please check","last_time":"10:05 AM"},
+                {"id":5,"name":"Usman Mobiles","username":"usman","online":false,"unread":0,"last":"You: Done, try again","last_time":"30 Sep"}]""")
+            "/api/chat/messages" -> json("""{"messages":[{"id":1,"mine":false,"body":"Hello, Slot A login not working, please check","time":"10:04 AM","day":"Thu, 01 Oct 2026"},
+                {"id":2,"mine":true,"body":"Checking now — one minute.","time":"10:05 AM","day":"Thu, 01 Oct 2026"},
+                {"id":3,"mine":false,"body":"Thanks 👍","time":"10:06 AM","day":"Thu, 01 Oct 2026"}],"seen_upto":2,"peer":{"name":"${if (admin) "Ali Khan" else "Support team"}","online":true,"last_seen":"now"}}""")
+            "/admin/settings" -> page("admin/settings", """{"info":{"url":"https://abtools.pk","php":"8.3.12","db":"MySQL 10.11","last":1790000000},
+                "sections":{"general":[{"key":"system_name","type":"str","value":"AB Tools"},{"key":"timezone","type":"tz","value":"Asia/Karachi"},{"key":"base_currency","type":"cur","value":"PKR"},{"key":"support_whatsapp","type":"str","value":"923001234567"}],
+                "rentals":[{"key":"max_active_rentals","type":"int","value":"3"},{"key":"show_slot_count","type":"bool","value":"1"},{"key":"refund_mode","type":"refund","value":"prorata"}]}}""")
+            "/admin/website" -> page("admin/site_posts", """{"notPosted":1,"posts":[{"id":1,"section":"tools","title":"UnlockTool","category":"Multi-brand","color":"#22d3ee","link_type":"tool","linked":{"name":"UnlockTool"},"price_mode":"auto","is_active":1},
+                {"id":2,"section":"services","title":"Xiaomi FRP Remove","color":"#f97316","link_type":"url","link_url":"https://wa.me/923001234567","price_mode":"custom","price_text":"Rs 500","is_active":1}]}""")
+            "/reseller/invoices" -> page("reseller/invoices", """{"rows":[{"id":31,"invoice_number":"INV-261001-0031","tool_name":"UnlockTool","created_at":"2026-10-01T10:00:00Z","payment_status":"paid","total_amount":"350.00","currency":"PKR"},
+                {"id":30,"invoice_number":"INV-260930-0030","tool_name":"Chimera Tool","created_at":"2026-09-30T08:00:00Z","payment_status":"paid","total_amount":"500.00","currency":"PKR"}]}""")
+            "/profile" -> page("auth/profile", """{"me":{"username":"${if (admin) "admin" else "ali"}","full_name":"${if (admin) "Aamir Buneri" else "Ali Khan"}","email":"ali@shop.pk","phone":"923001112233","company_name":"Ali Mobile Zone","role":"${if (admin) "admin" else "reseller"}","totp_enabled":false,"email_verified":true,"created_at":"2026-03-12T10:00:00Z"},
+                "logins":[{"id":1,"success":1,"ip_address":"39.45.10.2","user_agent":"ABGsmRental-Android/1.2.0","created_at":"2026-10-01T09:30:00Z"}]}""")
+            else -> MockResponse().setHeader("Content-Type", "application/json").setBody("""{"ok":false,"kind":"abort","status":404,"error":"Not in the fake site: $path","flash":[]}""")
         }
     }
 
@@ -335,6 +372,18 @@ abstract class ResellerFlow(theme: String) : FlowHarness(theme) {
         rule.onNodeWithText("Notifications").performClick()
         waitText("Tool ready: UnlockTool")
         shot("15-notifications")
+        back()
+        tapText("Invoices")
+        waitText("INV-261001-0031")
+        shot("16-invoices")
+        back()
+        tapText("Chat with support")
+        waitText("Checking now")
+        shot("17-chat")
+        back()
+        tapText("Profile & security")
+        waitText("Two-step sign-in")
+        shot("18-profile")
 
         assertTrue("app talked to the site: ${site.calls}", site.calls.any { it.contains("/api/v1/dashboard") })
     }
@@ -429,24 +478,45 @@ abstract class AdminFlow(theme: String) : FlowHarness(theme) {
         back()
 
         tab("More")
-        waitText("Tools & slots")
+        waitText("Tools, plans & slots")
         shot("38-admin-more")
-        tapText("Tools & slots")
+        tapText("Tools, plans & slots")
         waitText("Griffin Unlocker")
         shot("39-admin-tools")
         tapText("UnlockTool")
         waitText("Slot B")
-        run {
-            val nodes = rule.onAllNodesWithText("Show login").fetchSemanticsNodes()
-            rule.runOnUiThread { nodes[1].config[androidx.compose.ui.semantics.SemanticsActions.OnClick].action?.invoke() }
-        }
-        waitText("B8-new!Pass")
         shot("40-admin-slots")
         back()
         back()
-        rule.onNodeWithText("Notifications").performClick()
+        waitText("Notifications")
+        tapText("Notifications")
         waitText("New registration")
         shot("41-admin-notifications")
+        back()
+        waitText("Send a message")
+        tapText("Send a message")
+        waitText("Preview")
+        shot("42-admin-compose")
+        back()
+        tapText("Chat with resellers")
+        waitText("Slot A login not working")
+        shot("43-admin-chats")
+        tapText("Ali Khan")
+        waitText("Checking now")
+        shot("44-admin-chat")
+        back()
+        back()
+        tapText("Settings")
+        waitText("Run the expiry check now")
+        shot("45-admin-settings")
+        tapText("General")
+        waitText("System name")
+        shot("46-admin-settings-general")
+        back()
+        back()
+        tapText("Website posts")
+        waitText("Xiaomi FRP Remove")
+        shot("47-admin-website")
 
         assertTrue("admin endpoints used: ${site.calls}", site.calls.any { it.contains("/api/v1/admin/dashboard") } && site.calls.none { it == "GET /api/v1/dashboard" })
     }
