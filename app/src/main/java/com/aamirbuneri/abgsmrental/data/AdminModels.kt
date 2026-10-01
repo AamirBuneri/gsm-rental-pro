@@ -16,6 +16,9 @@ object Perm {
     const val SERVICES = "services"
     const val RESELLERS = "resellers"
     const val MONEY = "money"
+    const val CATALOG = "catalog"
+    const val CHAT = "chat"
+    const val WEBSITE = "website"
 }
 
 @Serializable

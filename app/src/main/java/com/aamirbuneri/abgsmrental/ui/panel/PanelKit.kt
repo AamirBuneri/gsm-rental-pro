@@ -140,7 +140,7 @@ class PageVM(private val api: Api, val path: String, initial: Map<String, String
         private set
     private var job: Job? = null
 
-    val data: JsonElement? get() = (state as? Load.Ok)?.data?.data
+    val data: JsonElement? get() = (state as? Load.Ok)?.data?.let { it.data ?: it.json }
 
     init { load() }
 
@@ -244,7 +244,7 @@ fun Panel(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         if (vm.refreshError != null) item { InlineError(vm.refreshError) }
-                        content(state.data.data)
+                        content(state.data.data ?: state.data.json)
                     }
                 }
             }
