@@ -22,8 +22,8 @@ android {
         applicationId = "com.aamirbuneri.abgsmrental"
         minSdk = 24
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.1.0"
+        versionCode = 3
+        versionName = "1.2.0"
         // Your website — filled in on the first screen, resellers can still change it.
         buildConfigField("String", "DEFAULT_SITE", "\"https://aamirbuneri.com\"")
         vectorDrawables { useSupportLibrary = true }

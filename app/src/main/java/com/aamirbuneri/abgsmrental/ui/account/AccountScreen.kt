@@ -19,6 +19,28 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.automirrored.outlined.List
+import androidx.compose.material.icons.automirrored.outlined.ReceiptLong
+import androidx.compose.material.icons.automirrored.outlined.TrendingUp
+import androidx.compose.material.icons.automirrored.outlined.Undo
+import androidx.compose.material.icons.outlined.AddTask
+import androidx.compose.material.icons.outlined.Api
+import androidx.compose.material.icons.outlined.Backup
+import androidx.compose.material.icons.outlined.Badge
+import androidx.compose.material.icons.outlined.BarChart
+import androidx.compose.material.icons.outlined.Bolt
+import androidx.compose.material.icons.outlined.Campaign
+import androidx.compose.material.icons.outlined.EventBusy
+import androidx.compose.material.icons.outlined.PersonAdd
+import androidx.compose.material.icons.outlined.Send
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Shield
+import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.outlined.Storefront
+import androidx.compose.material.icons.outlined.ViewCarousel
+import androidx.compose.ui.platform.testTag
+import com.aamirbuneri.abgsmrental.ui.panel.PanelCtx
+import com.aamirbuneri.abgsmrental.work.LiveAlerts
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.Logout
@@ -116,15 +138,53 @@ fun AccountScreen(nav: NavHostController, shell: Shell, settings: Settings) {
                 }
             }
 
+            fun pg(key: String, id: Int = 0, x: String = "") = nav.navigate(PanelCtx.route(key, id, x))
             if (settings.team) {
-                Group("Admin") {
+                val can = { p: String -> settings.can(p) }
+                Group("Panel") {
                     Item(Icons.Outlined.Notifications, "Notifications", b.info, badge = shell.unread) { nav.navigate(AdminRoutes.NOTIFICATIONS) }
-                    if (settings.can(Perm.TOOLS)) {
-                        Divider()
-                        Item(Icons.Outlined.Inventory2, "Tools & slots", b.warning) { nav.navigate(AdminRoutes.TOOLS) }
+                    if (can(Perm.RENTALS)) { Divider(); Item(Icons.Outlined.AddTask, "Assign a tool", b.success) { pg("assign") } }
+                    if (can(Perm.RESELLERS)) {
+                        Divider(); Item(Icons.Outlined.PersonAdd, "New reseller", b.info) { pg("rform") }
+                        Divider(); Item(Icons.Outlined.Storefront, "Walk-in clients", b.warning) { pg("clients") }
+                        Divider(); Item(Icons.Outlined.Api, "API access requests", MaterialTheme.colorScheme.tertiary) { pg("apiaccess") }
                     }
+                }
+                if (can(Perm.TOOLS) || can(Perm.CATALOG)) Group("Catalog") {
+                    var first = true
+                    if (can(Perm.TOOLS)) {
+                        Item(Icons.Outlined.Inventory2, "Tools, plans & slots", b.warning) { nav.navigate(AdminRoutes.TOOLS) }
+                        Divider(); Item(Icons.Outlined.EventBusy, "Tool accounts & expiry", b.danger) { pg("accounts") }
+                        first = false
+                    }
+                    if (can(Perm.CATALOG)) { if (!first) Divider(); Item(Icons.Outlined.SupportAgent, "Remote services", b.info) { pg("services") } }
+                }
+                if (can(Perm.MONEY)) Group("Money") {
+                    Item(Icons.AutoMirrored.Outlined.ReceiptLong, "Invoices & payments", b.success) { pg("invoices") }
+                    Divider(); Item(Icons.AutoMirrored.Outlined.Undo, "Returns & refunds", b.warning) { pg("returns") }
+                    Divider(); Item(Icons.Outlined.BarChart, "Reports", b.info) { pg("reports") }
+                    Divider(); Item(Icons.AutoMirrored.Outlined.TrendingUp, "Profit", b.success) { pg("profit") }
+                }
+                if (can(Perm.CHAT)) Group("Chat & messages") {
+                    Item(Icons.AutoMirrored.Outlined.Chat, "Chat with resellers", b.info) { pg("chats") }
+                    Divider(); Item(Icons.Outlined.Send, "Send a message", b.success) { pg("compose") }
+                    Divider(); Item(Icons.Outlined.Campaign, "Announcements", b.warning) { pg("ann") }
+                }
+                if (can(Perm.WEBSITE)) Group("Website") {
+                    Item(Icons.Outlined.Language, "Website posts", MaterialTheme.colorScheme.tertiary) { pg("website") }
+                    Divider(); Item(Icons.Outlined.ViewCarousel, "Banners", b.info) { pg("banners") }
+                    Divider(); Item(Icons.Outlined.Star, "Reviews", b.warning) { pg("reviews") }
+                }
+                if (settings.owner) Group("System") {
+                    Item(Icons.Outlined.Settings, "Settings", MaterialTheme.colorScheme.tertiary) { pg("settings") }
+                    Divider(); Item(Icons.Outlined.Badge, "Staff", b.info) { pg("staff") }
+                    Divider(); Item(Icons.Outlined.Backup, "Backups", b.success) { pg("backups") }
+                    Divider(); Item(Icons.AutoMirrored.Outlined.List, "Activity log", b.warning) { pg("activity") }
+                }
+                Group("Me") {
+                    Item(Icons.Outlined.Shield, "Profile & security", b.info) { pg("profile") }
                     Divider()
-                    Item(Icons.Outlined.AdminPanelSettings, "Full admin panel (website)", MaterialTheme.colorScheme.tertiary) {
+                    Item(Icons.Outlined.AdminPanelSettings, "Open the website panel", MaterialTheme.colorScheme.tertiary) {
                         openUrl(context, settings.site.trimEnd('/') + "/index.php?r=%2Fadmin")
                     }
                 }
@@ -139,10 +199,23 @@ fun AccountScreen(nav: NavHostController, shell: Shell, settings: Settings) {
                     Item(Icons.Outlined.AccountBalanceWallet, "Wallet & history", b.success) { nav.navigate(Routes.WALLET) }
                     Divider()
                     Item(Icons.Outlined.Notifications, "Notifications", b.info, badge = shell.unread) { nav.navigate(Routes.NOTIFICATIONS) }
+                    Divider()
+                    Item(Icons.AutoMirrored.Outlined.ReceiptLong, "Invoices", b.warning) { pg("rinvoices") }
+                    Divider()
+                    Item(Icons.AutoMirrored.Outlined.Undo, "Returns & refunds", b.danger) { pg("myreturns") }
                     if (shell.services) {
                         Divider()
                         Item(Icons.Outlined.SupportAgent, "My service orders", b.warning) { nav.goTab(Routes.SERVICES) }
                     }
+                }
+                Group("Support & more") {
+                    Item(Icons.AutoMirrored.Outlined.Chat, "Chat with support", b.success) { pg("chat", 0, "Support team") }
+                    Divider()
+                    Item(Icons.Outlined.Star, "Reviews", b.warning) { pg("myreviews") }
+                    Divider()
+                    Item(Icons.Outlined.Api, "API for my website", MaterialTheme.colorScheme.tertiary) { pg("myapi") }
+                    Divider()
+                    Item(Icons.Outlined.Shield, "Profile & security", b.info) { pg("profile") }
                 }
             }
 
@@ -176,6 +249,36 @@ fun AccountScreen(nav: NavHostController, shell: Shell, settings: Settings) {
                         },
                         colors = SwitchDefaults.colors(checkedTrackColor = MaterialTheme.colorScheme.primary),
                     )
+                }
+                if (settings.notifications) {
+                    Divider()
+                    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        IconBadge(Icons.Outlined.Bolt, b.success, 38.dp)
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text("Instant alerts", style = MaterialTheme.typography.titleSmall)
+                            Text("Messages arrive within a minute, even with the app closed. Shows a small silent icon.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Switch(
+                            checked = settings.liveAlerts,
+                            onCheckedChange = { on ->
+                                scope.launch {
+                                    c.prefs.setLiveAlerts(on)
+                                    if (on) LiveAlerts.ensure(context) else LiveAlerts.stop(context)
+                                }
+                                if (on) askBattery(context)
+                            },
+                            colors = SwitchDefaults.colors(checkedTrackColor = MaterialTheme.colorScheme.primary),
+                            modifier = Modifier.testTag("live_switch"),
+                        )
+                    }
+                    if (settings.liveAlerts && !ignoringBattery(context)) {
+                        Text(
+                            "Tip: allow “no battery restrictions” so Android doesn’t pause alerts.",
+                            style = MaterialTheme.typography.bodySmall, color = b.warning,
+                            modifier = Modifier.fillMaxWidth().clickable { askBattery(context) }.padding(start = 66.dp, end = 16.dp, bottom = 12.dp),
+                        )
+                    }
                 }
             }
 
@@ -272,4 +375,18 @@ private fun permLabel(p: String): String = when (p) {
     "rentals" -> "Rentals"; "tools" -> "Tools & slots"; "services" -> "Service orders"; "catalog" -> "Service catalog"
     "resellers" -> "Resellers"; "money" -> "Money"; "chat" -> "Chat"; "website" -> "Website"
     else -> p
+}
+
+private fun ignoringBattery(context: android.content.Context): Boolean =
+    (context.getSystemService(android.content.Context.POWER_SERVICE) as? android.os.PowerManager)?.isIgnoringBatteryOptimizations(context.packageName) == true
+
+/** Ask Android to let the alert service run (otherwise it may pause it in deep sleep). */
+@android.annotation.SuppressLint("BatteryLife")
+fun askBattery(context: android.content.Context) {
+    if (ignoringBattery(context)) return
+    runCatching {
+        context.startActivity(android.content.Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, android.net.Uri.parse("package:" + context.packageName)).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
+    }.onFailure {
+        runCatching { context.startActivity(android.content.Intent(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) }
+    }
 }

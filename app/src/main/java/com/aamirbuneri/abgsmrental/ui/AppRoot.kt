@@ -67,6 +67,7 @@ import com.aamirbuneri.abgsmrental.ui.services.OrderFormScreen
 import com.aamirbuneri.abgsmrental.ui.services.ServicesScreen
 import com.aamirbuneri.abgsmrental.ui.splash.BrandSplash
 import com.aamirbuneri.abgsmrental.ui.wallet.WalletScreen
+import com.aamirbuneri.abgsmrental.ui.panel.panelPages
 
 /** Small app-wide state the tabs share. */
 class Shell {
@@ -133,6 +134,7 @@ private fun SignedIn(settings: Settings) {
         }
     }
     val shell = remember(settings.team) { Shell() }
+    LaunchedEffect(shell) { context.container.unread.collect { if (it >= 0) shell.unread = it } }
     if (settings.team) AdminShell(settings, shell) else MainShell(settings, shell)
 }
 
@@ -157,6 +159,8 @@ private fun MainShell(settings: Settings, shell: Shell) {
         add(Tab(Routes.ACCOUNT, "Account", Icons.Outlined.AccountCircle, Icons.Filled.AccountCircle))
     }
     val showBar = tabs.any { it.route == route }
+    val ctx = remember(nav, settings, shell.info?.currency) { com.aamirbuneri.abgsmrental.ui.panel.PanelCtx(nav, settings, shell.info?.currency ?: "PKR") }
+    OpenLinks(nav, admin = false)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -214,6 +218,7 @@ private fun MainShell(settings: Settings, shell: Shell) {
                 composable(Routes.ORDER_NEW, arguments = listOf(navArgument("serviceId") { type = NavType.IntType })) {
                     OrderFormScreen(nav, it.arguments?.getInt("serviceId") ?: 0)
                 }
+                panelPages { ctx }
             }
         }
     }

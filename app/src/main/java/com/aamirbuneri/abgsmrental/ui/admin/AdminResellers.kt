@@ -1,5 +1,6 @@
 package com.aamirbuneri.abgsmrental.ui.admin
 
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -192,6 +193,23 @@ fun AdminResellerScreen(nav: NavHostController, settings: Settings, id: Int) {
             TopAppBar(
                 title = { Text(r?.displayName ?: "Reseller", maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 navigationIcon = { IconButton(onClick = { nav.popBackStack() }) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Back") } },
+                actions = {
+                    if (r != null) {
+                        val scope = androidx.compose.runtime.rememberCoroutineScope()
+                        fun post(path: String) = scope.launch {
+                            try { api.submit(path).message?.let(toast); vm.refresh() } catch (e: com.aamirbuneri.abgsmrental.data.ApiException) { toast(e.message ?: "Something went wrong.") }
+                        }
+                        fun pg(key: String, x: String = "") = nav.navigate(com.aamirbuneri.abgsmrental.ui.panel.PanelCtx.route(key, id, x))
+                        com.aamirbuneri.abgsmrental.ui.panel.MoreMenu(buildList<Pair<String, () -> Unit>> {
+                            add("Edit details" to { pg("rform") })
+                            if (settings.can(Perm.CHAT)) add("Chat" to { pg("chat", r.displayName) })
+                            if (settings.can(Perm.RENTALS)) add("Assign a tool" to { pg("assign") })
+                            if (settings.can(Perm.MONEY)) add("Allow / stop going below zero" to { post("/admin/resellers/$id/toggle-negative") })
+                            add("Reset two-step sign-in" to { post("/admin/resellers/$id/reset-2fa") })
+                            if (settings.owner) add("Delete reseller" to { pg("rdelete") })
+                        })
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
             )
             PullToRefreshBox(isRefreshing = vm.refreshing, onRefresh = { vm.refresh(pull = true) }, modifier = Modifier.fillMaxSize()) {

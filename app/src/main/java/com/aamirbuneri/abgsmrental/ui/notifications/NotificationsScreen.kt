@@ -129,7 +129,9 @@ class NoticesVM(private val api: Api, private val admin: Boolean = false) : View
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationsScreen(nav: NavHostController, shell: Shell, admin: Boolean = false) {
-    val api = LocalContext.current.container.api
+    val context = LocalContext.current
+    val api = context.container.api
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
     val vm: NoticesVM = viewModel(key = if (admin) "a_notices" else "notices") { NoticesVM(api, admin) }
     LaunchedEffect(vm.unread) { shell.unread = vm.unread }
     ScreenBackground {
@@ -156,15 +158,30 @@ fun NotificationsScreen(nav: NavHostController, shell: Shell, admin: Boolean = f
                     else -> LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         if (err != null) item { InlineError(err.message) }
                         items(list, key = { it.id }) { n ->
-                            NoticeRow(n) {
-                                vm.read(n)
-                                if (admin) openAdminLink(nav, n)
-                                else when {
-                                    n.rentalId != null -> nav.navigate(Routes.rental(n.rentalId))
-                                    n.orderId != null -> nav.navigate(Routes.order(n.orderId!!))
-                                    n.link.contains("wallet") -> nav.navigate(Routes.WALLET)
+                            fun open(link: String) {
+                                scope.launch {
+                                    val site = context.container.prefs.site()
+                                    runCatching { com.aamirbuneri.abgsmrental.ui.openSiteLink(context, nav, link, admin, site) }
                                 }
                             }
+                            val tap = {
+                                vm.read(n)
+                                when {
+                                    !admin && n.rentalId != null -> nav.navigate(Routes.rental(n.rentalId))
+                                    admin && n.rentalId != null -> nav.navigate(com.aamirbuneri.abgsmrental.ui.admin.AdminRoutes.rental(n.rentalId))
+                                    n.link.isNotBlank() -> open(n.link)
+                                    !n.actionUrl.isNullOrBlank() -> open(n.actionUrl)
+                                    else -> {}
+                                }
+                            }
+                            if (n.broadcast || !n.image.isNullOrBlank() || !n.actionLabel.isNullOrBlank()) {
+                                com.aamirbuneri.abgsmrental.ui.components.RichNotice(
+                                    n.title, n.message, n.type, image = n.image?.ifBlank { null }, actionLabel = n.actionLabel?.ifBlank { null },
+                                    time = ago(n.createdAt), unread = !n.read,
+                                    onAction = { vm.read(n); n.actionUrl?.takeIf { it.isNotBlank() }?.let { open(it) } },
+                                    onClick = { tap() },
+                                )
+                            } else NoticeRow(n) { tap() }
                         }
                         if (!vm.end) item {
                             TextButton(onClick = { vm.more() }, enabled = !vm.loadingMore, modifier = Modifier.fillMaxWidth()) {
@@ -204,19 +221,5 @@ private fun NoticeRow(n: Notice, onClick: () -> Unit) {
                 Text(ago(n.createdAt), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f))
             }
         }
-    }
-}
-
-/** Admin notification → the matching admin screen (links are the website's admin pages). */
-private fun openAdminLink(nav: NavHostController, n: Notice) {
-    val link = n.link
-    fun id(re: String) = Regex(re).find(link)?.groupValues?.get(1)?.toIntOrNull()
-    when {
-        n.rentalId != null -> nav.navigate(com.aamirbuneri.abgsmrental.ui.admin.AdminRoutes.rental(n.rentalId))
-        id("/services/orders/(\\d+)") != null -> nav.navigate(com.aamirbuneri.abgsmrental.ui.admin.AdminRoutes.order(id("/services/orders/(\\d+)")!!))
-        id("/resellers/(\\d+)") != null -> nav.navigate(com.aamirbuneri.abgsmrental.ui.admin.AdminRoutes.reseller(id("/resellers/(\\d+)")!!))
-        id("/rentals/(\\d+)") != null -> nav.navigate(com.aamirbuneri.abgsmrental.ui.admin.AdminRoutes.rental(id("/rentals/(\\d+)")!!))
-        id("/tools/(\\d+)") != null -> nav.navigate(com.aamirbuneri.abgsmrental.ui.admin.AdminRoutes.slots(id("/tools/(\\d+)")!!))
-        link.contains("/admin/tools") || link.contains("/admin/accounts") -> nav.navigate(com.aamirbuneri.abgsmrental.ui.admin.AdminRoutes.TOOLS)
     }
 }

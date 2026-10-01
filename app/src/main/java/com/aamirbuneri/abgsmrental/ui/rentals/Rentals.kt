@@ -44,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -212,7 +213,7 @@ fun RentalDetailScreen(nav: NavHostController, id: Int) {
                 when (state) {
                     is Load.Loading -> LoadingCards(3, 140.dp)
                     is Load.Err -> ErrorState(state.error.message ?: "", state.error.offline) { vm.refresh() }
-                    is Load.Ok -> RentalDetail(state.data, vm.refreshError)
+                    is Load.Ok -> RentalDetail(state.data, vm.refreshError) { nav.navigate(com.aamirbuneri.abgsmrental.ui.panel.PanelCtx.route("returnreq", id, "${state.data.tool} · ${state.data.number}")) }
                 }
             }
         }
@@ -220,7 +221,7 @@ fun RentalDetailScreen(nav: NavHostController, id: Int) {
 }
 
 @Composable
-private fun RentalDetail(r: Rental, refreshError: String?) {
+private fun RentalDetail(r: Rental, refreshError: String?, onProblem: () -> Unit = {}) {
     val context = LocalContext.current
     val now = rememberNow()
     val running = r.status == "active" && r.endsAtMs > now
@@ -281,6 +282,9 @@ private fun RentalDetail(r: Rental, refreshError: String?) {
             InfoRow("Started", dateTime(r.startedAt))
             InfoRow("Ends", dateTime(r.expiresAt))
             InfoRow("Status", rentalLabel(if (running) "active" else r.status))
+        }
+        if (running) {
+            SecondaryButton("Didn’t work — ask for a refund", onProblem, Modifier.fillMaxWidth().testTag("rental_problem"))
         }
     }
 }

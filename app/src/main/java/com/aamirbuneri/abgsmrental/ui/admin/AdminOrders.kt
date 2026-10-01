@@ -137,6 +137,11 @@ fun AdminOrderScreen(nav: NavHostController, id: Int) {
             TopAppBar(
                 title = { Text((state as? Load.Ok)?.data?.number ?: "Order", maxLines = 1) },
                 navigationIcon = { IconButton(onClick = { nav.popBackStack() }) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Back") } },
+                actions = {
+                    IconButton(onClick = { nav.navigate(com.aamirbuneri.abgsmrental.ui.panel.PanelCtx.route("orderchat", id, "Order chat")) }) {
+                        Icon(Icons.AutoMirrored.Outlined.Chat, "Chat with the customer")
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
             )
             PullToRefreshBox(isRefreshing = vm.refreshing, onRefresh = { vm.refresh(pull = true) }, modifier = Modifier.fillMaxSize()) {

@@ -54,6 +54,11 @@ import com.aamirbuneri.abgsmrental.ui.Shell
 import com.aamirbuneri.abgsmrental.ui.account.AccountScreen
 import com.aamirbuneri.abgsmrental.ui.goTab
 import com.aamirbuneri.abgsmrental.ui.notifications.NotificationsScreen
+import com.aamirbuneri.abgsmrental.ui.panel.PanelCtx
+import com.aamirbuneri.abgsmrental.ui.panel.SlotsPanel
+import com.aamirbuneri.abgsmrental.ui.panel.ToolsPanel
+import com.aamirbuneri.abgsmrental.ui.panel.panelPages
+import com.aamirbuneri.abgsmrental.ui.OpenLinks
 
 object AdminRoutes {
     const val HOME = "a_home"
@@ -108,6 +113,8 @@ fun AdminShell(settings: Settings, shell: Shell) {
         add(Tab(AdminRoutes.MORE, "More", Icons.Outlined.MoreHoriz, Icons.Filled.MoreHoriz) { shell.unread })
     }
     val showBar = tabs.any { it.route == route }
+    val ctx = remember(nav, settings, shell.info?.currency) { PanelCtx(nav, settings, shell.info?.currency ?: "PKR") }
+    OpenLinks(nav, admin = true)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -156,7 +163,7 @@ fun AdminShell(settings: Settings, shell: Shell) {
                 composable(AdminRoutes.ORDERS) { AdminOrdersScreen(nav, admin) }
                 composable(AdminRoutes.RESELLERS) { AdminResellersScreen(nav, admin) }
                 composable(AdminRoutes.MORE) { AccountScreen(nav, shell, settings) }
-                composable(AdminRoutes.TOOLS) { AdminToolsScreen(nav) }
+                composable(AdminRoutes.TOOLS) { ToolsPanel(ctx) }
                 composable(AdminRoutes.NOTIFICATIONS) { NotificationsScreen(nav, shell, admin = true) }
                 composable(AdminRoutes.RENTAL, arguments = listOf(navArgument("id") { type = NavType.IntType })) {
                     AdminRentalScreen(nav, it.arguments?.getInt("id") ?: 0)
@@ -168,8 +175,9 @@ fun AdminShell(settings: Settings, shell: Shell) {
                     AdminResellerScreen(nav, settings, it.arguments?.getInt("id") ?: 0)
                 }
                 composable(AdminRoutes.SLOTS, arguments = listOf(navArgument("id") { type = NavType.IntType })) {
-                    AdminSlotsScreen(nav, it.arguments?.getInt("id") ?: 0)
+                    SlotsPanel(ctx, it.arguments?.getInt("id") ?: 0)
                 }
+                panelPages { ctx }
             }
         }
     }

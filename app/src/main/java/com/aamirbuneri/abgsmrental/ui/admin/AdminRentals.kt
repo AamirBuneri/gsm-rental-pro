@@ -1,5 +1,6 @@
 package com.aamirbuneri.abgsmrental.ui.admin
 
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -164,6 +165,7 @@ fun AdminRentalScreen(nav: NavHostController, id: Int) {
             TopAppBar(
                 title = { Text((state as? Load.Ok)?.data?.let { it.tool } ?: "Rental", maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 navigationIcon = { IconButton(onClick = { nav.popBackStack() }) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Back") } },
+                actions = { RentalExtras(id) { vm.refresh() } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
             )
             PullToRefreshBox(isRefreshing = vm.refreshing, onRefresh = { vm.refresh(pull = true) }, modifier = Modifier.fillMaxSize()) {
@@ -269,5 +271,50 @@ private fun Detail(nav: NavHostController, r: AdminRental, refreshError: String?
                 }
             }
         }
+    }
+}
+
+/** Note on a rental and exact start / end times (the website's rental page). */
+@Composable
+private fun RentalExtras(id: Int, reload: () -> Unit) {
+    val api = LocalContext.current.container.api
+    val toast = rememberToast()
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    var open by remember { mutableStateOf<String?>(null) }
+    var text by remember { mutableStateOf("") }
+    var start by remember { mutableStateOf("") }
+    var end by remember { mutableStateOf("") }
+    com.aamirbuneri.abgsmrental.ui.panel.MoreMenu(listOf<Pair<String, () -> Unit>>(
+        "Add a note" to { text = ""; open = "note" },
+        "Change start / end time" to { start = ""; end = ""; open = "times" },
+    ))
+    val o = open
+    if (o != null) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { open = null },
+            title = { Text(if (o == "note") "Note" else "Start / end time") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (o == "note") {
+                        androidx.compose.material3.OutlinedTextField(text, { text = it }, label = { Text("Note (team only)") }, minLines = 3)
+                    } else {
+                        Text("Format: 2026-10-01 14:30 (your site’s time zone)", style = MaterialTheme.typography.bodySmall)
+                        androidx.compose.material3.OutlinedTextField(start, { start = it }, label = { Text("Start") }, singleLine = true)
+                        androidx.compose.material3.OutlinedTextField(end, { end = it }, label = { Text("End") }, singleLine = true)
+                    }
+                }
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    val data = if (o == "note") com.aamirbuneri.abgsmrental.data.form("body" to text)
+                    else com.aamirbuneri.abgsmrental.data.form("start_time" to start.trim().replace(' ', 'T'), "expiry_time" to end.trim().replace(' ', 'T'))
+                    scope.launch {
+                        try { api.submit("/admin/rentals/$id/" + (if (o == "note") "note" else "times"), data).message?.let(toast); open = null; reload() }
+                        catch (e: com.aamirbuneri.abgsmrental.data.ApiException) { toast(e.message ?: "Something went wrong.") }
+                    }
+                }) { Text("Save") }
+            },
+            dismissButton = { androidx.compose.material3.TextButton(onClick = { open = null }) { Text("Cancel") } },
+        )
     }
 }

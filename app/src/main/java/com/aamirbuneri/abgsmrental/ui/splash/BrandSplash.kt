@@ -31,7 +31,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 
-/** Full-screen brand art (dark art in dark mode, white art in light mode) shown once per launch. */
+/** Full-screen brand art (the same white art in light and dark mode) shown once per launch. */
 @Composable
 fun BrandSplash(dark: Boolean, onDone: () -> Unit) {
     val alpha = remember { Animatable(0f) }
@@ -47,9 +47,9 @@ fun BrandSplash(dark: Boolean, onDone: () -> Unit) {
         }
         onDone()
     }
-    Box(Modifier.fillMaxSize().background(if (dark) Color(0xFF05080E) else Color.White)) {
+    Box(Modifier.fillMaxSize().background(Color.White)) {
         Image(
-            painter = painterResource(if (dark) R.drawable.splash_art_dark else R.drawable.splash_art_light),
+            painter = painterResource(R.drawable.splash_art_light),
             contentDescription = "AB Gsm Rental",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -69,7 +69,7 @@ fun BrandSplash(dark: Boolean, onDone: () -> Unit) {
                 .width(140.dp)
                 .height(3.dp)
                 .clip(CircleShape)
-                .background(if (dark) Color.White.copy(alpha = 0.12f) else Color.Black.copy(alpha = 0.08f)),
+                .background(Color.Black.copy(alpha = 0.08f)),
         ) {
             Box(
                 Modifier
