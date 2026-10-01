@@ -1,0 +1,5 @@
+93:e: file:///home/runner/work/gsm-rental-pro/gsm-rental-pro/app/src/main/java/com/aamirbuneri/abgsmrental/ui/components/Rich.kt:77:21 Unresolved reference 'withLink'.
+96:e: file:///home/runner/work/gsm-rental-pro/gsm-rental-pro/app/src/main/java/com/aamirbuneri/abgsmrental/ui/components/Rich.kt:77:21 Unresolved reference 'withLink'.
+98:FAILURE: Build completed with 2 failures.
+102:* What went wrong:
+363:* What went wrong:
